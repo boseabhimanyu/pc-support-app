@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/config"
@@ -28,9 +29,11 @@ func Connect(cfg config.Config) (*mongo.Client, *mongo.Database, error) {
 		return nil, nil, fmt.Errorf("mongo ping failed: %w", err)
 	}
 
-	database := client.Database(cfg.MongoDB)
+	db := client.Database(cfg.MongoDB)
 
-	return client, database, nil
+	log.Printf("MongoDB connected (database: %s)", cfg.MongoDB)
+
+	return client, db, nil
 }
 
 func Disconnect(client *mongo.Client) error {
