@@ -27,6 +27,17 @@ func main() {
 			log.Printf("mongo disconnect error: %v", err)
 		}
 	}()
+	// Temporary test
+	//-----------------------------------
+	// userRepo := repository.NewUserRepository(db)
+
+	// ctx := context.Background()
+
+	// user, err := userRepo.FindByPhone(ctx, "9876543210")
+
+	// fmt.Println("User:", user)
+	// fmt.Println("Error:", err)
+	//----------------------------------------------------------------
 
 	router := router.NewRouter(db)
 
@@ -37,4 +48,5 @@ func main() {
 	if err := router.Run(addr); err != nil {
 		log.Fatalf("Server Failed")
 	}
+
 }

@@ -28,10 +28,18 @@ func NewRouter(database *mongo.Database) *gin.Engine {
 
 	authHandler := handlers.NewAuthHandler(authService)
 
-	// API Routes
+	// API Version
 	api := r.Group("/api/v1")
 	{
-		api.POST("/auth/register", authHandler.Register)
+		// Authentication Routes
+		auth := api.Group("/auth")
+		{
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
+		}
+
+		// protected := api.Group("/")
+		// protected.Use(AuthMiddleware())
 	}
 
 	return r
