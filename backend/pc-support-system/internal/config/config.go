@@ -4,14 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	MongoUri   string
-	MongoDB    string
-	ServerPort string
+	MongoUri       string
+	MongoDB        string
+	ServerPort     string
+	JWTSecret      string
+	JWTExpiryHours int
 }
 
 func Load() (Config, error) {
@@ -49,10 +52,27 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	jwtSecret, err := extractEnv("JWT_SECRET")
+	if err != nil {
+		return Config{}, err
+	}
+
+	jwtExpiryHoursStr, err := extractEnv("JWT_EXPIRY_HOURS")
+	if err != nil {
+		return Config{}, err
+	}
+
+	jwtExpiryHours, err := strconv.Atoi(jwtExpiryHoursStr)
+	if err != nil {
+		return Config{}, fmt.Errorf("invalid JWT_EXPIRY_HOURS")
+	}
+
 	return Config{
-		MongoUri:   mongoURI,
-		MongoDB:    mongoDB,
-		ServerPort: port,
+		MongoUri:       mongoURI,
+		MongoDB:        mongoDB,
+		ServerPort:     port,
+		JWTSecret:      jwtSecret,
+		JWTExpiryHours: jwtExpiryHours,
 	}, nil
 }
 
@@ -71,6 +91,13 @@ func (c Config) Validate() error {
 		return errors.New("server port missing")
 	}
 
+	if c.JWTSecret == "" {
+		return errors.New("jwt secret missing")
+	}
+
+	if strconv.Itoa(c.JWTExpiryHours) == "" {
+		return errors.New("jwt expiry hours missing")
+	}
 	return nil
 }
 

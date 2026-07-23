@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/auth"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -55,6 +56,28 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	user, err := h.authService.Login(c.Request.Context(), req)
+
+	token, err := auth.GenerateToken(
+		user, h.cfg.JWTSecret,
+		h.cfg.JWTExpiryHours,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to generate token",
+		})
+		return
+	}
+
+	c.SetCookie(
+		"access_token",
+		token,
+		h.cfg.JWTExpiryHours*60*60, // seconds
+		"/",
+		"",
+		false, // Secure (true when using HTTPS)
+		true,  // HttpOnly
+	)
+
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
