@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
@@ -55,35 +56,55 @@ func (s *UserService) UpdateProfile(
 		return nil, errors.New("user not found")
 	}
 
+	if req.FirstName != nil {
+		user.FirstName = *req.FirstName
+	}
+
+	if req.LastName != nil {
+		user.LastName = *req.LastName
+	}
 	// Check email uniqueness
-	if req.Email != user.Email {
-		existing, err := s.userRepo.FindByEmail(ctx, req.Email)
-		if err != nil {
-			return nil, err
+	if req.Email != nil {
+
+		if strings.TrimSpace(*req.Email) == "" {
+			return nil, errors.New("email cannot be empty")
 		}
 
-		if existing != nil {
-			return nil, errors.New("email already exists")
+		if *req.Email != user.Email {
+			existing, err := s.userRepo.FindByEmail(ctx, *req.Email)
+			if err != nil {
+				return nil, err
+			}
+
+			if existing != nil {
+				return nil, errors.New("email already in use with another user")
+			}
 		}
+
+		user.Email = *req.Email
 	}
 
 	// Check phone uniqueness
-	if req.Phone != user.Phone {
-		existing, err := s.userRepo.FindByPhone(ctx, req.Phone)
-		if err != nil {
-			return nil, err
+	if req.Phone != nil {
+
+		if strings.TrimSpace(*req.Phone) == "" {
+			return nil, errors.New("phone cannot be empty")
 		}
 
-		if existing != nil {
-			return nil, errors.New("phone number already exists")
+		if *req.Phone != user.Phone {
+			existing, err := s.userRepo.FindByPhone(ctx, *req.Phone)
+			if err != nil {
+				return nil, err
+			}
+
+			if existing != nil {
+				return nil, errors.New("phone number already in use with another user")
+			}
 		}
+
+		user.Phone = *req.Phone
 	}
 
-	// Update fields
-	user.FirstName = req.FirstName
-	user.LastName = req.LastName
-	user.Email = req.Email
-	user.Phone = req.Phone
 	user.UpdatedAt = time.Now()
 
 	// Save

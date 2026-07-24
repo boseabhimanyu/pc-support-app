@@ -13,10 +13,10 @@ type UserResponse struct {
 }
 
 type UpdateProfileRequest struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email" binding:"omitempty,email"`
-	Phone     string `json:"phone"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+	Email     *string `json:"email" binding:"omitempty,email"`
+	Phone     *string `json:"phone" binding:"omitempty,numeric"`
 }
 
 type ChangePasswordRequest struct {

@@ -52,7 +52,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				})
 			})
 			protected.GET("/users/me", userHandler.GetProfile)
-			protected.PUT("/users/me", userHandler.UpdateProfile)
+			protected.PATCH("/users/me", userHandler.UpdateProfile)
 			protected.POST("/logout", authHandler.Logout)
 		}
 	}

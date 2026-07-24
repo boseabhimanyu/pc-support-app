@@ -6,7 +6,7 @@ type RegisterRequest struct {
 	FirstName string `json:"firstName" binding:"required,min=2,max=50"`
 	LastName  string `json:"lastName" binding:"max=50"`
 	Email     string `json:"email" binding:"omitempty,email"`
-	Phone     string `json:"phone" binding:"required"`
+	Phone     string `json:"phone" binding:"required,numeric"`
 	Password  string `json:"password" binding:"required,min=8,max=64"`
 }
 
