@@ -9,11 +9,12 @@ import (
 type Role string
 
 const (
-	RoleSuperAdmin   Role = "super_admin"
-	RoleAdmin        Role = "admin"
-	RoleTechnician   Role = "technician"
-	RoleReceptionist Role = "receptionist"
-	RoleCustomer     Role = "customer"
+	RoleSuperAdmin     Role = "super_admin"
+	RoleAdmin          Role = "admin"
+	RoleTechnician     Role = "technician"
+	RoleHeadTechnician Role = "head_technician"
+	RoleReceptionist   Role = "receptionist"
+	RoleCustomer       Role = "customer"
 )
 
 type User struct {
@@ -36,6 +37,7 @@ func (r Role) IsValid() bool {
 	case RoleSuperAdmin,
 		RoleAdmin,
 		RoleTechnician,
+		RoleHeadTechnician,
 		RoleReceptionist,
 		RoleCustomer:
 		return true

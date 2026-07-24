@@ -17,41 +17,40 @@ const (
 	DeviceRouter  DeviceType = "router"
 )
 
-type DeviceStatus string
+type DeviceState string
 
 const (
-	StatusActive    DeviceStatus = "active"
-	StatusInRepair  DeviceStatus = "in_repair"
-	StatusDelivered DeviceStatus = "delivered"
-	StatusRetired   DeviceStatus = "retired"
+	DeviceActive   DeviceState = "active"
+	DeviceInactive DeviceState = "inactive"
 )
 
 type Device struct {
 	ID         bson.ObjectID `bson:"_id,omitempty" json:"id"`
 	CustomerID bson.ObjectID `bson:"customer_id" json:"customerId"`
 
-	Type   DeviceType   `bson:"type" json:"type"`
-	Status DeviceStatus `bson:"status" json:"status"`
+	Type DeviceType `bson:"type" json:"type"`
 
-	Brand string `bson:"brand,omitempty" json:"brand,omitempty"`
-	Model string `bson:"model,omitempty" json:"model,omitempty"`
-
-	Notes string `bson:"notes,omitempty" json:"notes,omitempty"`
-
-	CreatedAt time.Time `bson:"created_at" json:"createdAt"`
-	UpdatedAt time.Time `bson:"updated_at" json:"updatedAt"`
+	Brand        string          `bson:"brand,omitempty" json:"brand,omitempty"`
+	Model        string          `bson:"model,omitempty" json:"model,omitempty"`
+	SerialNumber string          `bson:"serial_number,omitempty" json:"serial_number,omitempty"`
+	Notes        string          `bson:"notes,omitempty" json:"notes,omitempty"`
+	Condition    DeviceCondition `bson:"condition" json:"condition"`
+	CreatedAt    time.Time       `bson:"created_at" json:"createdAt"`
+	UpdatedAt    time.Time       `bson:"updated_at" json:"updatedAt"`
 }
 
 type Component struct {
-	ID       bson.ObjectID `bson:"_id,omitempty"`
-	DeviceID bson.ObjectID `bson:"device_id"`
+	ID       bson.ObjectID `bson:"_id,omitempty" json:"id"`
+	DeviceID bson.ObjectID `bson:"device_id" json:"deviceId"`
 
-	Type         ComponentType `bson:"type"`
-	Manufacturer string        `bson:"manufacturer,omitempty"`
-	Model        string        `bson:"model,omitempty"`
-	SerialNumber string        `bson:"serial_number,omitempty"`
+	Type         ComponentType `bson:"type" json:"type"`
+	Manufacturer string        `bson:"manufacturer,omitempty" json:"manufacturer,omitempty"`
+	Model        string        `bson:"model,omitempty" json:"model,omitempty"`
+	SerialNumber string        `bson:"serial_number,omitempty" json:"serialNumber,omitempty"`
 
-	InstalledAt time.Time `bson:"installed_at"`
+	InstalledAt time.Time `bson:"installed_at" json:"installedAt"`
+
+	UpdatedAt time.Time `bson:"updated_at" json:"updatedAt"`
 }
 
 type ComponentType string
@@ -64,4 +63,13 @@ const (
 	ComponentPSU         ComponentType = "psu"
 	ComponentGPU         ComponentType = "gpu"
 	ComponentOptical     ComponentType = "optical_drive"
+)
+
+type DeviceCondition string
+
+const (
+	DeviceWorking          DeviceCondition = "working"
+	DeviceNotWorking       DeviceCondition = "not_working"
+	DevicePartiallyWorking DeviceCondition = "partially_working"
+	DeviceUnknown          DeviceCondition = "unknown"
 )

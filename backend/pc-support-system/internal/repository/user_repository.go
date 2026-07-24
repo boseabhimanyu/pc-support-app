@@ -15,6 +15,4 @@ type UserRepository interface {
 	Update(ctx context.Context, user *models.User) error
 }
 
-// Update(user *models.User) error
-
 // Delete(id bson.ObjectID) error
