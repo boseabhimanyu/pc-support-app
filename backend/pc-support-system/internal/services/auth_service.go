@@ -99,11 +99,3 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*models.
 
 	return user, nil
 }
-
-// HashPassword()
-
-// ComparePassword()
-
-// GenerateJWT()
-
-// ValidateRole()

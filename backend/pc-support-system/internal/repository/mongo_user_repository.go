@@ -56,3 +56,44 @@ func (r *MongoUserRepository) FindByEmail(ctx context.Context, email string) (*m
 
 	return &user, nil
 }
+
+func (r *MongoUserRepository) FindByID(ctx context.Context, id bson.ObjectID) (*models.User, error) {
+	var user models.User
+
+	err := r.collection.FindOne(ctx, bson.M{
+		"_id": id,
+	}).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *MongoUserRepository) Update(
+	ctx context.Context,
+	user *models.User,
+) error {
+
+	update := bson.M{
+		"$set": bson.M{
+			"first_name": user.FirstName,
+			"last_name":  user.LastName,
+			"email":      user.Email,
+			"phone":      user.Phone,
+			"updated_at": user.UpdatedAt,
+		},
+	}
+
+	_, err := r.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": user.ID},
+		update,
+	)
+
+	return err
+}

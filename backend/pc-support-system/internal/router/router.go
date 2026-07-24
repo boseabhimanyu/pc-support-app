@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/auth"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/config"
 	handlers "github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/handler"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
@@ -28,18 +29,32 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 
 	authHandler := handlers.NewAuthHandler(authService, cfg)
 
+	userService := services.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
+
 	// API Version
 	api := r.Group("/api/v1")
 	{
 		// Authentication Routes
-		auth := api.Group("/auth")
+		open := api.Group("/auth")
 		{
-			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
+			open.POST("/register", authHandler.Register)
+			open.POST("/login", authHandler.Login)
 		}
 
-		// protected := api.Group("/")
-		// protected.Use(AuthMiddleware())
+		protected := api.Group("")
+		protected.Use(auth.AuthMiddleware(cfg.JWTSecret))
+		{
+			protected.GET("/me", func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{
+					"userID": c.GetString("userID"),
+					"role":   c.GetString("role"),
+				})
+			})
+			protected.GET("/users/me", userHandler.GetProfile)
+			protected.PUT("/users/me", userHandler.UpdateProfile)
+			protected.POST("/logout", authHandler.Logout)
+		}
 	}
 
 	return r
