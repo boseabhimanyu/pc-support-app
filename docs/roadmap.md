@@ -3,18 +3,18 @@ Authentication
 [x] Registration
 [x] Login
 [x] Password Hashing
-[ ] JWT
-[ ] Middleware
+[x] JWT
+[x] Middleware
 
 Users
 
 [x] Create
-[ ] Update
+[x] Update
 [ ] Delete
 
 Devices
 
-[ ] Create
+[x] Create
 [ ] Update
 
 Jobs

@@ -3,30 +3,41 @@ package dto
 import "github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 
 type AddDeviceRequest struct {
-	CustomerID string            `json:"customerId" binding:"required"`
-	Type       models.DeviceType `json:"type" binding:"required"`
-
-	Brand        string `json:"brand"`
-	Model        string `json:"model"`
-	SerialNumber string `json:"serialNumber"`
-	Notes        string `json:"notes"`
+	CustomerID   string                 `json:"customerId" binding:"required"`
+	Type         models.DeviceType      `json:"type" binding:"required"`
+	Condition    models.DeviceCondition `json:"condition" binding:"required"`
+	Brand        string                 `json:"brand"`
+	Model        string                 `json:"model"`
+	SerialNumber string                 `json:"serialNumber"`
+	Notes        string                 `json:"notes"`
 }
 
 type DeviceResponse struct {
-	ID           string            `json:"id"`
-	CustomerID   string            `json:"customerId"`
-	Type         models.DeviceType `json:"type"`
-	Brand        string            `json:"brand,omitempty"`
-	Model        string            `json:"model,omitempty"`
-	SerialNumber string            `json:"serialNumber,omitempty"`
-	Notes        string            `json:"notes,omitempty"`
+	ID string `json:"id"`
+
+	Customer CustomerSummary `json:"customer"`
+
+	Type      models.DeviceType      `json:"type"`
+	Condition models.DeviceCondition `json:"condition"`
+
+	Brand        string `json:"brand,omitempty"`
+	Model        string `json:"model,omitempty"`
+	SerialNumber string `json:"serialNumber,omitempty"`
+	Notes        string `json:"notes,omitempty"`
+}
+
+type CustomerSummary struct {
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
 }
 
 func ToDeviceResponse(device *models.Device) DeviceResponse {
 	return DeviceResponse{
 		ID:           device.ID.Hex(),
-		CustomerID:   device.CustomerID.Hex(),
 		Type:         device.Type,
+		Condition:    device.Condition,
 		Brand:        device.Brand,
 		Model:        device.Model,
 		SerialNumber: device.SerialNumber,
@@ -43,4 +54,14 @@ func ToDeviceResponses(devices []models.Device) []DeviceResponse {
 	}
 
 	return resp
+}
+
+type UpdateDeviceRequest struct {
+	Type      *models.DeviceType      `json:"type"`
+	Condition *models.DeviceCondition `json:"condition"`
+
+	Brand        *string `json:"brand"`
+	Model        *string `json:"model"`
+	SerialNumber *string `json:"serialNumber"`
+	Notes        *string `json:"notes"`
 }

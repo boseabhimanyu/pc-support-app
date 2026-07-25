@@ -10,11 +10,15 @@ Receptionist receives device
 
 ↓
 
-Technician diagnoses
+Head Technician diagnoses
 
 ↓
 
 Customer approves quotation
+
+↓
+
+Head Technician assigns the job to Technician
 
 ↓
 

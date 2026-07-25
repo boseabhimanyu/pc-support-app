@@ -83,7 +83,17 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				),
 				deviceHandler.GetCustomerDevices,
 			)
-			// protected.PATCH("/devices/:id")
+			protected.GET(
+				"/devices/:deviceId",
+				auth.RequireRoles(
+					string(models.RoleReceptionist),
+					string(models.RoleTechnician),
+					string(models.RoleHeadTechnician),
+					string(models.RoleAdmin),
+					string(models.RoleSuperAdmin),
+				),
+				deviceHandler.GetDevice,
+			)
 			// protected.PATCH("/devices/:id/deactivate")
 		}
 	}

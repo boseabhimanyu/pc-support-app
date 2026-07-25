@@ -65,3 +65,24 @@ func (r *MongoDeviceRepository) FindByCustomerID(
 
 	return devices, nil
 }
+
+func (r *MongoDeviceRepository) FindByID(
+	ctx context.Context,
+	id bson.ObjectID,
+) (*models.Device, error) {
+
+	var device models.Device
+
+	err := r.collection.FindOne(ctx, bson.M{
+		"_id": id,
+	}).Decode(&device)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &device, nil
+}

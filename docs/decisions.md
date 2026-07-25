@@ -19,4 +19,5 @@ SuperAdmin
 Admin
 Receptionist
 Technician
+HeadTechnician
 Customer

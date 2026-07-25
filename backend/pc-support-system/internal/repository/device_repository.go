@@ -10,7 +10,10 @@ import (
 type DeviceRepository interface {
 	Create(ctx context.Context, device *models.Device) error
 
-	//FindByID(ctx context.Context, id bson.ObjectID) (*models.Device, error)
+	FindByID(
+		ctx context.Context,
+		id bson.ObjectID,
+	) (*models.Device, error)
 
 	FindByCustomerID(
 		ctx context.Context,

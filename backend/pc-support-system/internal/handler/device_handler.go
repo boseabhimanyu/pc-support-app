@@ -62,3 +62,22 @@ func (h *DeviceHandler) GetCustomerDevices(c *gin.Context) {
 
 	c.JSON(http.StatusOK, devices)
 }
+
+func (h *DeviceHandler) GetDevice(c *gin.Context) {
+
+	id := c.Param("deviceId")
+
+	device, err := h.deviceService.GetDevice(
+		c.Request.Context(),
+		id,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, device)
+}

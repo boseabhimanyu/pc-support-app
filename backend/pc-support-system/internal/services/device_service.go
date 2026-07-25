@@ -109,6 +109,47 @@ func (s *DeviceService) GetCustomerDevices(
 	return dto.ToDeviceResponses(devices), nil
 }
 
+func (s *DeviceService) GetDevice(
+	ctx context.Context,
+	id string,
+) (*dto.DeviceResponse, error) {
+
+	deviceID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, errors.New("invalid device id")
+	}
+
+	device, err := s.deviceRepo.FindByID(ctx, deviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	if device == nil {
+		return nil, errors.New("device not found")
+	}
+
+	// Get customer details
+	user, err := s.userRepo.FindByID(ctx, device.CustomerID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("customer not found")
+	}
+
+	resp := dto.ToDeviceResponse(device)
+
+	resp.Customer = dto.CustomerSummary{
+		ID:        user.ID.Hex(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Phone:     user.Phone,
+	}
+
+	return &resp, nil
+}
+
 // UpdateDevice()
 
 // DeactivateDevice()
