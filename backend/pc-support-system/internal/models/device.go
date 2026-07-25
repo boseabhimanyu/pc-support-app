@@ -73,3 +73,29 @@ const (
 	DevicePartiallyWorking DeviceCondition = "partially_working"
 	DeviceUnknown          DeviceCondition = "unknown"
 )
+
+func (d DeviceType) IsValid() bool {
+	switch d {
+	case DeviceLaptop,
+		DeviceDesktop,
+		DevicePrinter,
+		DeviceMonitor,
+		DeviceUPS,
+		DeviceRouter:
+		return true
+	default:
+		return false
+	}
+}
+
+func (d DeviceCondition) IsValid() bool {
+	switch d {
+	case DeviceWorking,
+		DeviceNotWorking,
+		DevicePartiallyWorking,
+		DeviceUnknown:
+		return true
+	default:
+		return false
+	}
+}

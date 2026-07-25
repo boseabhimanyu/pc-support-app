@@ -38,6 +38,14 @@ func (s *DeviceService) AddDevice(
 		return nil, errors.New("invalid customer id")
 	}
 
+	if !req.Type.IsValid() {
+		return nil, errors.New("invalid device type")
+	}
+
+	if !req.Condition.IsValid() {
+		return nil, errors.New("invalid device condition")
+	}
+
 	// Check customer exists
 	user, err := s.userRepo.FindByID(ctx, customerID)
 	if err != nil {
@@ -57,6 +65,7 @@ func (s *DeviceService) AddDevice(
 	device := &models.Device{
 		CustomerID: customerID,
 		Type:       req.Type,
+		Condition:  req.Condition,
 
 		Brand:        req.Brand,
 		Model:        req.Model,
@@ -74,6 +83,8 @@ func (s *DeviceService) AddDevice(
 	}
 
 	resp := dto.ToDeviceResponse(device)
+
+	resp.Customer = dto.ToCustomerSummary(user)
 
 	return &resp, nil
 }
@@ -106,7 +117,18 @@ func (s *DeviceService) GetCustomerDevices(
 		return nil, err
 	}
 
-	return dto.ToDeviceResponses(devices), nil
+	responses := dto.ToDeviceResponses(devices)
+
+	for i := range responses {
+		responses[i].Customer = dto.CustomerSummary{
+			ID:        user.ID.Hex(),
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Phone:     user.Phone,
+		}
+	}
+
+	return responses, nil
 }
 
 func (s *DeviceService) GetDevice(

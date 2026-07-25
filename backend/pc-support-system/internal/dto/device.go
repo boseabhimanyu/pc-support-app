@@ -65,3 +65,12 @@ type UpdateDeviceRequest struct {
 	SerialNumber *string `json:"serialNumber"`
 	Notes        *string `json:"notes"`
 }
+
+func ToCustomerSummary(user *models.User) CustomerSummary {
+	return CustomerSummary{
+		ID:        user.ID.Hex(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Phone:     user.Phone,
+	}
+}
