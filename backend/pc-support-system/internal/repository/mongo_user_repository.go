@@ -97,3 +97,41 @@ func (r *MongoUserRepository) Update(
 
 	return err
 }
+
+func (r *MongoUserRepository) Search(
+	ctx context.Context,
+	query string,
+) ([]models.User, error) {
+
+	filter := bson.M{
+		"role": models.RoleCustomer,
+		"$or": []bson.M{
+			{
+				"phone": bson.M{
+					"$regex":   query,
+					"$options": "i",
+				},
+			},
+			{
+				"email": bson.M{
+					"$regex":   query,
+					"$options": "i",
+				},
+			},
+		},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var users []models.User
+
+	if err := cursor.All(ctx, &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

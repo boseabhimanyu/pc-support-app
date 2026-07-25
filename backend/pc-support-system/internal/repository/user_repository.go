@@ -13,6 +13,7 @@ type UserRepository interface {
 	FindByPhone(ctx context.Context, phone string) (*models.User, error)
 	FindByID(ctx context.Context, id bson.ObjectID) (*models.User, error)
 	Update(ctx context.Context, user *models.User) error
+	Search(ctx context.Context, query string) ([]models.User, error)
 }
 
 // Delete(id bson.ObjectID) error

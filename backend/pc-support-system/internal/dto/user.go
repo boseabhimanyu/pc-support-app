@@ -23,3 +23,32 @@ type ChangePasswordRequest struct {
 	CurrentPassword string `json:"currentPassword" binding:"required"`
 	NewPassword     string `json:"newPassword" binding:"required,min=8"`
 }
+
+type CustomerSearchResponse struct {
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+}
+
+func ToCustomerSearchResponse(user *models.User) CustomerSearchResponse {
+	return CustomerSearchResponse{
+		ID:        user.ID.Hex(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Phone:     user.Phone,
+		Email:     user.Email,
+	}
+}
+
+func ToCustomerSearchResponses(users []models.User) []CustomerSearchResponse {
+
+	resp := make([]CustomerSearchResponse, 0, len(users))
+
+	for _, user := range users {
+		resp = append(resp, ToCustomerSearchResponse(&user))
+	}
+
+	return resp
+}

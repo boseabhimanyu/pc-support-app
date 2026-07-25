@@ -82,3 +82,22 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
+
+func (h *UserHandler) SearchCustomers(c *gin.Context) {
+
+	query := c.Query("q")
+
+	customers, err := h.userService.SearchCustomers(
+		c.Request.Context(),
+		query,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, customers)
+}

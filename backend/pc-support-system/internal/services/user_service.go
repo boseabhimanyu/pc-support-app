@@ -117,3 +117,22 @@ func (s *UserService) UpdateProfile(
 
 	return &resp, nil
 }
+
+func (s *UserService) SearchCustomers(
+	ctx context.Context,
+	query string,
+) ([]dto.CustomerSearchResponse, error) {
+
+	query = strings.TrimSpace(query)
+
+	if query == "" {
+		return nil, errors.New("search query is required")
+	}
+
+	users, err := s.userRepo.Search(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.ToCustomerSearchResponses(users), nil
+}
