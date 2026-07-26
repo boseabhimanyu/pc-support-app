@@ -14,19 +14,21 @@ type CreateJobRequest struct {
 }
 
 type JobResponse struct {
-	ID string `json:"id"`
-
+	ID        string `json:"id"`
 	JobNumber string `json:"jobNumber"`
 
 	Status models.JobStatus `json:"status"`
 
 	Customer CustomerSummary `json:"customer"`
-
-	Device DeviceSummary `json:"device"`
+	Device   DeviceSummary   `json:"device"`
 
 	ProblemDescription string `json:"problemDescription"`
 
 	CreatedAt time.Time `json:"createdAt"`
+
+	CreatedBy UserSummary `json:"createdBy"`
+
+	AssignedTo *UserSummary `json:"assignedTo,omitempty"`
 }
 
 type DeviceSummary struct {
@@ -39,4 +41,11 @@ type DeviceSummary struct {
 	Model string `json:"model,omitempty"`
 
 	SerialNumber string `json:"serialNumber,omitempty"`
+}
+
+type UserSummary struct {
+	ID        string      `json:"id"`
+	FirstName string      `json:"firstName"`
+	LastName  string      `json:"lastName"`
+	Role      models.Role `json:"role"`
 }

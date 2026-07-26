@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -81,3 +83,29 @@ func (r *MongoJobRepository) FindByJobNumber(
 // 	ctx context.Context,
 // 	status models.JobStatus,
 // ) ([]models.Job, error)
+
+func (r *MongoJobRepository) GenerateJobNumber(
+	ctx context.Context,
+) (string, error) {
+
+	today := time.Now().Format("20060102")
+
+	prefix := "JOB-" + today + "-"
+
+	filter := bson.M{
+		"job_number": bson.M{
+			"$regex": "^" + prefix,
+		},
+	}
+
+	count, err := r.collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return "", err
+	}
+
+	next := count + 1
+
+	jobNumber := fmt.Sprintf("%s%04d", prefix, next)
+
+	return jobNumber, nil
+}

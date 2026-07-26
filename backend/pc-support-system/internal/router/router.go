@@ -41,6 +41,15 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 
 	deviceHandler := handlers.NewDeviceHandler(deviceService)
 
+	jobRepo := repository.NewJobRepository(database)
+
+	jobService := services.NewJobService(
+		jobRepo,
+		userRepo,
+		deviceRepo,
+	)
+
+	jobHandler := handlers.NewJobHandler(jobService)
 	// API Version
 	api := r.Group("/api/v1")
 	{
@@ -122,6 +131,16 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					string(models.RoleSuperAdmin),
 				),
 				userHandler.SetCustomerPassword,
+			)
+			protected.POST(
+				"/jobs",
+				auth.RequireRoles(
+					string(models.RoleReceptionist),
+					string(models.RoleHeadTechnician),
+					string(models.RoleAdmin),
+					string(models.RoleSuperAdmin),
+				),
+				jobHandler.CreateJob,
 			)
 			// protected.PATCH("/devices/:id/deactivate")
 		}

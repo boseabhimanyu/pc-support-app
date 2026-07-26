@@ -126,6 +126,17 @@ func (r *MongoUserRepository) Search(
 					"$options": "i",
 				},
 			},
+			{
+				"first_name": bson.M{
+					"$regex":   query,
+					"$options": "i",
+				},
+			},
+			{
+				"last_name": bson.M{
+					"$regex":   query,
+					"$options": "i"},
+			},
 		},
 	}
 
