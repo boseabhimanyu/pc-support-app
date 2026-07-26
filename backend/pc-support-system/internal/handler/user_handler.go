@@ -134,6 +134,7 @@ func (h *UserHandler) CreateCustomer(c *gin.Context) {
 func (h *UserHandler) SetCustomerPassword(c *gin.Context) {
 
 	customerID := c.Param("customerId")
+	updatedBy := c.GetString("userID")
 
 	var req dto.SetCustomerPasswordRequest
 
@@ -147,6 +148,7 @@ func (h *UserHandler) SetCustomerPassword(c *gin.Context) {
 	err := h.userService.SetCustomerPassword(
 		c.Request.Context(),
 		customerID,
+		updatedBy,
 		req,
 	)
 

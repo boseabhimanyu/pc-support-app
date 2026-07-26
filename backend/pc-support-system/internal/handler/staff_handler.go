@@ -35,3 +35,36 @@ func (h *UserHandler) CreateStaff(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, staff)
 }
+
+func (h *UserHandler) SetStaffPassword(c *gin.Context) {
+
+	staffID := c.Param("staffId")
+	updatedBy := c.GetString("userID")
+
+	var req dto.SetStaffPasswordRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err := h.userService.SetStaffPassword(
+		c.Request.Context(),
+		staffID,
+		updatedBy,
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "staff password set successfully",
+	})
+}

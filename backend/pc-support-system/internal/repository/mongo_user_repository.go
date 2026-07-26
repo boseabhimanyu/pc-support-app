@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -157,18 +156,22 @@ func (r *MongoUserRepository) Search(
 
 func (r *MongoUserRepository) UpdatePassword(
 	ctx context.Context,
-	id bson.ObjectID,
-	passwordHash string,
+	user *models.User,
 ) error {
 
 	update := bson.M{
 		"$set": bson.M{
-			"password_hash": passwordHash,
-			"updated_at":    time.Now(),
+			"password_hash": user.PasswordHash,
+			"updated_at":    user.UpdatedAt,
+			"updated_by_id": user.UpdatedByID,
 		},
 	}
 
-	_, err := r.collection.UpdateByID(ctx, id, update)
+	_, err := r.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": user.ID},
+		update,
+	)
 
 	return err
 }

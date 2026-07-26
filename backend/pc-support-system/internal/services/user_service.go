@@ -221,6 +221,7 @@ func (s *UserService) CreateCustomer(
 func (s *UserService) SetCustomerPassword(
 	ctx context.Context,
 	customerID string,
+	updatedBy string,
 	req dto.SetCustomerPasswordRequest,
 ) error {
 
@@ -229,17 +230,22 @@ func (s *UserService) SetCustomerPassword(
 		return errors.New("invalid customer id")
 	}
 
-	user, err := s.userRepo.FindByID(ctx, id)
+	customer, err := s.userRepo.FindByID(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if user == nil {
+	if customer == nil {
 		return errors.New("customer not found")
 	}
 
-	if user.Role != models.RoleCustomer {
+	if customer.Role != models.RoleCustomer {
 		return errors.New("invalid customer")
+	}
+
+	updatedByID, err := bson.ObjectIDFromHex(updatedBy)
+	if err != nil {
+		return errors.New("invalid user")
 	}
 
 	if strings.TrimSpace(req.Password) == "" {
@@ -254,11 +260,11 @@ func (s *UserService) SetCustomerPassword(
 		return err
 	}
 
-	return s.userRepo.UpdatePassword(
-		ctx,
-		id,
-		string(hash),
-	)
+	customer.PasswordHash = string(hash)
+	customer.UpdatedAt = time.Now()
+	customer.UpdatedByID = &updatedByID
+
+	return s.userRepo.UpdatePassword(ctx, customer)
 }
 
 func (s *UserService) UpdateCustomer(
@@ -472,4 +478,88 @@ func (s *UserService) CreateStaff(
 
 	return &resp, nil
 
+}
+
+func (s *UserService) SetStaffPassword(
+	ctx context.Context,
+	staffID string,
+	updatedBy string,
+	req dto.SetStaffPasswordRequest,
+) error {
+
+	// Staff ID
+	id, err := bson.ObjectIDFromHex(staffID)
+	if err != nil {
+		return errors.New("invalid staff id")
+	}
+
+	// Updater ID
+	updatedByID, err := bson.ObjectIDFromHex(updatedBy)
+	if err != nil {
+		return errors.New("invalid user")
+	}
+
+	// Staff
+	staff, err := s.userRepo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if staff == nil {
+		return errors.New("staff not found")
+	}
+
+	// Must not be a customer
+	if staff.Role == models.RoleCustomer {
+		return errors.New("invalid staff")
+	}
+
+	// Updater
+	updater, err := s.userRepo.FindByID(ctx, updatedByID)
+	if err != nil {
+		return err
+	}
+
+	if updater == nil {
+		return errors.New("user not found")
+	}
+
+	if updater.State != models.UserActive {
+		return errors.New("user account is inactive")
+	}
+
+	// Only Admin / Super Admin can set staff passwords
+	switch updater.Role {
+	case models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+	default:
+		return errors.New("user cannot set staff password")
+	}
+
+	// Admin cannot reset another Admin's password
+	if updater.Role == models.RoleAdmin &&
+		staff.Role == models.RoleAdmin {
+		return errors.New("admin cannot reset another admin's password")
+	}
+
+	// Validate password
+	if strings.TrimSpace(req.Password) == "" {
+		return errors.New("password is required")
+	}
+
+	// Hash password
+	hash, err := bcrypt.GenerateFromPassword(
+		[]byte(req.Password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return err
+	}
+
+	staff.PasswordHash = string(hash)
+	staff.UpdatedAt = time.Now()
+	staff.UpdatedByID = &updatedByID
+
+	return s.userRepo.UpdatePassword(ctx, staff)
 }
