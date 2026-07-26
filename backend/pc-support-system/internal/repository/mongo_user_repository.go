@@ -19,8 +19,15 @@ func NewUserRepository(db *mongo.Database) UserRepository {
 }
 
 func (r *MongoUserRepository) Create(ctx context.Context, user *models.User) error {
-	_, err := r.collection.InsertOne(ctx, user)
-	return err
+
+	result, err := r.collection.InsertOne(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	user.ID = result.InsertedID.(bson.ObjectID)
+
+	return nil
 }
 
 func (r *MongoUserRepository) FindByPhone(ctx context.Context, phone string) (*models.User, error) {

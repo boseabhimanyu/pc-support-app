@@ -52,3 +52,28 @@ func ToCustomerSearchResponses(users []models.User) []CustomerSearchResponse {
 
 	return resp
 }
+
+type CreateCustomerRequest struct {
+	FirstName string `json:"firstName" binding:"required"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone" binding:"required"`
+	Email     string `json:"email"`
+}
+
+type CustomerResponse struct {
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+}
+
+func ToCustomerResponse(user *models.User) CustomerResponse {
+	return CustomerResponse{
+		ID:        user.ID.Hex(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Phone:     user.Phone,
+		Email:     user.Email,
+	}
+}

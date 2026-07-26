@@ -101,3 +101,29 @@ func (h *UserHandler) SearchCustomers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, customers)
 }
+
+func (h *UserHandler) CreateCustomer(c *gin.Context) {
+
+	var req dto.CreateCustomerRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	customer, err := h.userService.CreateCustomer(
+		c.Request.Context(),
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, customer)
+}

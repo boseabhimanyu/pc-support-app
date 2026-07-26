@@ -45,3 +45,10 @@ func (r Role) IsValid() bool {
 		return false
 	}
 }
+
+type CreateCustomerRequest struct {
+	FirstName string `json:"firstName" binding:"required"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone" binding:"required"`
+	Email     string `json:"email"`
+}

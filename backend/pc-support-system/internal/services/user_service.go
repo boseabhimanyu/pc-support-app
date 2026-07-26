@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 	"errors"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -135,4 +137,64 @@ func (s *UserService) SearchCustomers(
 	}
 
 	return dto.ToCustomerSearchResponses(users), nil
+}
+
+func (s *UserService) CreateCustomer(
+	ctx context.Context,
+	req dto.CreateCustomerRequest,
+) (*dto.CustomerResponse, error) {
+
+	req.FirstName = strings.TrimSpace(req.FirstName)
+	req.LastName = strings.TrimSpace(req.LastName)
+	req.Phone = strings.TrimSpace(req.Phone)
+	if matched, _ := regexp.MatchString(`^[0-9]+$`, req.Phone); !matched {
+		return nil, errors.New("invalid phone number")
+	}
+	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
+
+	// Phone must be unique
+	existingPhone, err := s.userRepo.FindByPhone(ctx, req.Phone)
+	if err != nil {
+		return nil, err
+	}
+
+	if existingPhone != nil {
+		return nil, errors.New("phone number already exists")
+	}
+
+	// Email is optional but must be unique if provided
+	if req.Email != "" {
+
+		existingEmail, err := s.userRepo.FindByEmail(ctx, req.Email)
+		if err != nil {
+			return nil, err
+		}
+
+		if existingEmail != nil {
+			return nil, errors.New("email already exists")
+		}
+	}
+
+	user := &models.User{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Phone:     req.Phone,
+		Email:     req.Email,
+
+		Role:   models.RoleCustomer,
+		Active: true,
+
+		PasswordHash: "",
+
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	if err := s.userRepo.Create(ctx, user); err != nil {
+		return nil, err
+	}
+
+	resp := dto.ToCustomerResponse(user)
+
+	return &resp, nil
 }

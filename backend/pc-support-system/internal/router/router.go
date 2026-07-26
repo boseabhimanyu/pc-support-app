@@ -104,6 +104,16 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				),
 				userHandler.SearchCustomers,
 			)
+			protected.POST(
+				"/customers",
+				auth.RequireRoles(
+					string(models.RoleReceptionist),
+					string(models.RoleHeadTechnician),
+					string(models.RoleAdmin),
+					string(models.RoleSuperAdmin),
+				),
+				userHandler.CreateCustomer,
+			)
 			// protected.PATCH("/devices/:id/deactivate")
 		}
 	}
