@@ -172,3 +172,27 @@ func (r *MongoUserRepository) UpdatePassword(
 
 	return err
 }
+
+func (r *MongoUserRepository) UpdateCustomer(
+	ctx context.Context,
+	user *models.User,
+) error {
+
+	filter := bson.M{
+		"_id": user.ID,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"first_name":    user.FirstName,
+			"last_name":     user.LastName,
+			"phone":         user.Phone,
+			"email":         user.Email,
+			"updated_at":    user.UpdatedAt,
+			"updated_by_id": user.UpdatedByID,
+		},
+	}
+
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+	return err
+}

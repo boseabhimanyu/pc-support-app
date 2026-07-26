@@ -15,6 +15,7 @@ type UserRepository interface {
 	Update(ctx context.Context, user *models.User) error
 	Search(ctx context.Context, query string) ([]models.User, error)
 	UpdatePassword(ctx context.Context, id bson.ObjectID, passwordHash string) error
+	UpdateCustomer(ctx context.Context, user *models.User) error
 }
 
 // Delete(id bson.ObjectID) error

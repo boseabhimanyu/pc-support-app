@@ -142,7 +142,23 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				),
 				jobHandler.CreateJob,
 			)
-			// protected.PATCH("/devices/:id/deactivate")
+			protected.PATCH(
+				"/customers/:customerId",
+				auth.RequireRoles(
+					string(models.RoleReceptionist),
+					string(models.RoleAdmin),
+					string(models.RoleSuperAdmin),
+				),
+				userHandler.UpdateCustomer,
+			)
+			// protected.PATCH(
+			// 	"PATCH /customers/:customerId/state", auth.RequireRoles(
+			// 		string(models.RoleReceptionist),
+			// 		string(models.RoleAdmin),
+			// 		string(models.RoleSuperAdmin),
+			// 	),
+			// 	userHandler.CustomerState,
+			// )
 		}
 	}
 

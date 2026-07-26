@@ -161,3 +161,34 @@ func (h *UserHandler) SetCustomerPassword(c *gin.Context) {
 		"message": "customer password set successfully",
 	})
 }
+
+func (h *UserHandler) UpdateCustomer(c *gin.Context) {
+
+	customerID := c.Param("customerId")
+	updatedBy := c.GetString("userID")
+
+	var req dto.UpdateCustomerRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	customer, err := h.userService.UpdateCustomer(
+		c.Request.Context(),
+		customerID,
+		updatedBy,
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, customer)
+}

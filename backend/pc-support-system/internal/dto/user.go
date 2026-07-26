@@ -81,3 +81,10 @@ func ToCustomerResponse(user *models.User) CustomerResponse {
 type SetCustomerPasswordRequest struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
+
+type UpdateCustomerRequest struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+}

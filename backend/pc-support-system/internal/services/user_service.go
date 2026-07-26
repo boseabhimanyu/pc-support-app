@@ -260,3 +260,106 @@ func (s *UserService) SetCustomerPassword(
 		string(hash),
 	)
 }
+
+func (s *UserService) UpdateCustomer(
+	ctx context.Context,
+	customerID string,
+	updatedBy string,
+	req dto.UpdateCustomerRequest,
+) (*dto.CustomerResponse, error) {
+
+	// Customer ID
+	customerObjectID, err := bson.ObjectIDFromHex(customerID)
+	if err != nil {
+		return nil, errors.New("invalid customer id")
+	}
+
+	// Updater ID
+	updatedByID, err := bson.ObjectIDFromHex(updatedBy)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	// Customer
+	customer, err := s.userRepo.FindByID(ctx, customerObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if customer == nil {
+		return nil, errors.New("customer not found")
+	}
+
+	if customer.Role != models.RoleCustomer {
+		return nil, errors.New("invalid customer")
+	}
+
+	// Updater
+	updater, err := s.userRepo.FindByID(ctx, updatedByID)
+	if err != nil {
+		return nil, err
+	}
+
+	if updater == nil {
+		return nil, errors.New("user not found")
+	}
+
+	// First Name
+	if req.FirstName != "" {
+		customer.FirstName = strings.TrimSpace(req.FirstName)
+	}
+
+	// Last Name
+	if req.LastName != "" {
+		customer.LastName = strings.TrimSpace(req.LastName)
+	}
+
+	// Phone
+	if req.Phone != "" {
+
+		phone := strings.TrimSpace(req.Phone)
+
+		if matched, _ := regexp.MatchString(`^[0-9]+$`, phone); !matched {
+			return nil, errors.New("invalid phone number")
+		}
+
+		existingPhone, err := s.userRepo.FindByPhone(ctx, phone)
+		if err != nil {
+			return nil, err
+		}
+
+		if existingPhone != nil && existingPhone.ID != customer.ID {
+			return nil, errors.New("phone number already exists")
+		}
+
+		customer.Phone = phone
+	}
+
+	// Email
+	if req.Email != "" {
+
+		email := strings.TrimSpace(strings.ToLower(req.Email))
+
+		existingEmail, err := s.userRepo.FindByEmail(ctx, email)
+		if err != nil {
+			return nil, err
+		}
+
+		if existingEmail != nil && existingEmail.ID != customer.ID {
+			return nil, errors.New("email already exists")
+		}
+
+		customer.Email = email
+	}
+
+	customer.UpdatedAt = time.Now()
+	customer.UpdatedByID = &updatedByID
+
+	if err := s.userRepo.Update(ctx, customer); err != nil {
+		return nil, err
+	}
+
+	resp := dto.ToCustomerResponse(customer)
+
+	return &resp, nil
+}
