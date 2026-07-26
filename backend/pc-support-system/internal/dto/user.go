@@ -77,3 +77,7 @@ func ToCustomerResponse(user *models.User) CustomerResponse {
 		Email:     user.Email,
 	}
 }
+
+type SetCustomerPasswordRequest struct {
+	Password string `json:"password" binding:"required,min=8"`
+}

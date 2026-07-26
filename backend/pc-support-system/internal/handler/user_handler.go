@@ -127,3 +127,34 @@ func (h *UserHandler) CreateCustomer(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, customer)
 }
+
+func (h *UserHandler) SetCustomerPassword(c *gin.Context) {
+
+	customerID := c.Param("customerId")
+
+	var req dto.SetCustomerPasswordRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err := h.userService.SetCustomerPassword(
+		c.Request.Context(),
+		customerID,
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "customer password set successfully",
+	})
+}

@@ -11,6 +11,7 @@ import (
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -197,4 +198,47 @@ func (s *UserService) CreateCustomer(
 	resp := dto.ToCustomerResponse(user)
 
 	return &resp, nil
+}
+
+func (s *UserService) SetCustomerPassword(
+	ctx context.Context,
+	customerID string,
+	req dto.SetCustomerPasswordRequest,
+) error {
+
+	id, err := bson.ObjectIDFromHex(customerID)
+	if err != nil {
+		return errors.New("invalid customer id")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return errors.New("customer not found")
+	}
+
+	if user.Role != models.RoleCustomer {
+		return errors.New("invalid customer")
+	}
+
+	if strings.TrimSpace(req.Password) == "" {
+		return errors.New("password is required")
+	}
+
+	hash, err := bcrypt.GenerateFromPassword(
+		[]byte(req.Password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.UpdatePassword(
+		ctx,
+		id,
+		string(hash),
+	)
 }
