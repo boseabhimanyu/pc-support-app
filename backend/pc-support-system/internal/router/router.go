@@ -159,6 +159,17 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 			// 	),
 			// 	userHandler.CustomerState,
 			// )
+			staff := protected.Group("/staff")
+			{
+				staff.POST(
+					"",
+					auth.RequireRoles(
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					userHandler.CreateStaff,
+				)
+			}
 		}
 	}
 

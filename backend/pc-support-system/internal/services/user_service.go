@@ -363,3 +363,113 @@ func (s *UserService) UpdateCustomer(
 
 	return &resp, nil
 }
+
+func (s *UserService) CreateStaff(
+	ctx context.Context,
+	createdBy string,
+	req dto.CreateStaffRequest,
+) (*dto.UserResponse, error) {
+
+	req.FirstName = strings.TrimSpace(req.FirstName)
+	req.LastName = strings.TrimSpace(req.LastName)
+	req.Phone = strings.TrimSpace(req.Phone)
+
+	if matched, _ := regexp.MatchString(`^[0-9]+$`, req.Phone); !matched {
+		return nil, errors.New("invalid phone number")
+	}
+	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
+
+	// Phone must be unique
+	existingPhone, err := s.userRepo.FindByPhone(ctx, req.Phone)
+	if err != nil {
+		return nil, err
+	}
+
+	if existingPhone != nil {
+		return nil, errors.New("phone number already exists")
+	}
+
+	// Email must be unique
+
+	if req.Email != "" {
+
+		existingEmail, err := s.userRepo.FindByEmail(ctx, req.Email)
+		if err != nil {
+			return nil, err
+		}
+
+		if existingEmail != nil {
+			return nil, errors.New("email already exists")
+		}
+	}
+
+	switch req.Role {
+	case models.RoleReceptionist,
+		models.RoleTechnician,
+		models.RoleHeadTechnician,
+		models.RoleAdmin:
+		// valid
+	default:
+		return nil, errors.New("invalid staff role")
+	}
+
+	createdByID, err := bson.ObjectIDFromHex(createdBy)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	// Verify creator exists
+	creator, err := s.userRepo.FindByID(ctx, createdByID)
+	if err != nil {
+		return nil, err
+	}
+
+	if creator == nil {
+		return nil, errors.New("creator not found")
+	}
+
+	if creator.State != models.UserActive {
+		return nil, errors.New("creator account is inactive")
+	}
+
+	if creator.Role == models.RoleAdmin &&
+		req.Role == models.RoleAdmin {
+		return nil, errors.New("admin cannot create another admin")
+	}
+
+	switch creator.Role {
+	case models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+	default:
+		return nil, errors.New("user cannot create staff")
+	}
+	now := time.Now()
+
+	user := &models.User{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Phone:     req.Phone,
+		Email:     req.Email,
+
+		Role: req.Role,
+
+		State: models.UserActive,
+
+		PasswordHash: "",
+
+		CreatedByID: &createdByID,
+
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if err := s.userRepo.Create(ctx, user); err != nil {
+		return nil, err
+	}
+
+	resp := dto.ToUserResponse(user)
+
+	return &resp, nil
+
+}
