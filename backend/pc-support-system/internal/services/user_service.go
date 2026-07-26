@@ -142,6 +142,7 @@ func (s *UserService) SearchCustomers(
 
 func (s *UserService) CreateCustomer(
 	ctx context.Context,
+	createdBy string,
 	req dto.CreateCustomerRequest,
 ) (*dto.CustomerResponse, error) {
 
@@ -176,19 +177,36 @@ func (s *UserService) CreateCustomer(
 		}
 	}
 
+	createdByID, err := bson.ObjectIDFromHex(createdBy)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	// Verify creator exists
+	creator, err := s.userRepo.FindByID(ctx, createdByID)
+	if err != nil {
+		return nil, err
+	}
+
+	if creator == nil {
+		return nil, errors.New("creator not found")
+	}
+
+	now := time.Now()
+
 	user := &models.User{
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Phone:     req.Phone,
 		Email:     req.Email,
 
-		Role:   models.RoleCustomer,
-		Active: true,
+		Role:  models.RoleCustomer,
+		State: models.UserActive,
 
 		PasswordHash: "",
-
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedByID:  &createdByID,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {

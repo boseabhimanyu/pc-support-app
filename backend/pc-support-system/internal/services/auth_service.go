@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
@@ -59,7 +60,7 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) err
 		Phone:        req.Phone,
 		PasswordHash: string(hashedPassword),
 		Role:         models.RoleCustomer,
-		Active:       true,
+		State:        models.UserActive,
 
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -71,6 +72,7 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) err
 
 func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*models.User, error) {
 
+	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
 	// Find user by email
 	user, err := s.userRepo.FindByEmail(ctx, req.Email)
 
@@ -83,7 +85,7 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*models.
 	}
 
 	// Check if account is active
-	if !user.Active {
+	if user.State != models.UserActive {
 		return nil, errors.New("account is inactive")
 	}
 

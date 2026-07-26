@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
@@ -93,10 +94,29 @@ func (s *JobService) CreateJob(
 		return nil, errors.New("creator not found")
 	}
 
+	switch creator.Role {
+	case models.RoleReceptionist,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+	default:
+		return nil, errors.New("user cannot create jobs")
+	}
+
+	if creator.State != models.UserActive {
+		return nil, errors.New("creator account is inactive")
+	}
+
 	// Generate Job Number
 	jobNumber, err := s.jobRepo.GenerateJobNumber(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	req.ProblemDescription = strings.TrimSpace(req.ProblemDescription)
+
+	if req.ProblemDescription == "" {
+		return nil, errors.New("problem description is required")
 	}
 
 	now := time.Now()

@@ -18,18 +18,28 @@ const (
 )
 
 type User struct {
-	ID           bson.ObjectID `bson:"_id,omitempty" json:"id"`
-	Email        string        `bson:"email" json:"email"`
-	Phone        string        `bson:"phone" json:"phone"`
-	PasswordHash string        `bson:"password_hash" json:"-"`
-	FirstName    string        `bson:"first_name" json:"firstName"`
-	LastName     string        `bson:"last_name" json:"lastName"`
+	ID bson.ObjectID `bson:"_id,omitempty" json:"id"`
 
-	Role   Role `bson:"role" json:"role"`
-	Active bool `bson:"active" json:"active"`
+	// Basic Details
+	FirstName string `bson:"first_name" json:"firstName"`
+	LastName  string `bson:"last_name" json:"lastName"`
 
+	Email string `bson:"email" json:"email"`
+	Phone string `bson:"phone" json:"phone"`
+
+	PasswordHash string `bson:"password_hash" json:"-"`
+
+	Role Role `bson:"role" json:"role"`
+
+	// Employee / Customer State
+	State UserState `bson:"state" json:"state"`
+
+	// Audit
 	CreatedAt time.Time `bson:"created_at" json:"createdAt"`
 	UpdatedAt time.Time `bson:"updated_at" json:"updatedAt"`
+
+	CreatedByID *bson.ObjectID `bson:"created_by_id,omitempty" json:"-"`
+	UpdatedByID *bson.ObjectID `bson:"updated_by_id,omitempty" json:"-"`
 }
 
 func (r Role) IsValid() bool {
@@ -51,4 +61,20 @@ type CreateCustomerRequest struct {
 	LastName  string `json:"lastName"`
 	Phone     string `json:"phone" binding:"required"`
 	Email     string `json:"email"`
+}
+
+type UserState string
+
+const (
+	UserActive   UserState = "active"
+	UserInactive UserState = "inactive"
+)
+
+func (s UserState) IsValid() bool {
+	switch s {
+	case UserActive, UserInactive:
+		return true
+	default:
+		return false
+	}
 }

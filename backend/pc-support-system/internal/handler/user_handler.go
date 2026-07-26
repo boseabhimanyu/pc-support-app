@@ -113,8 +113,11 @@ func (h *UserHandler) CreateCustomer(c *gin.Context) {
 		return
 	}
 
+	createdBy := c.GetString("userID")
+
 	customer, err := h.userService.CreateCustomer(
 		c.Request.Context(),
+		createdBy,
 		req,
 	)
 

@@ -28,6 +28,6 @@ func ToUserResponse(user *models.User) UserResponse {
 		Email:     user.Email,
 		Phone:     user.Phone,
 		Role:      user.Role,
-		Active:    user.Active,
+		State:     user.State,
 	}
 }
