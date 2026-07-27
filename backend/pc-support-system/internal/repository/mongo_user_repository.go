@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"strings"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type MongoUserRepository struct {
@@ -198,4 +200,59 @@ func (r *MongoUserRepository) UpdateCustomer(
 
 	_, err := r.collection.UpdateOne(ctx, filter, update)
 	return err
+}
+
+func (r *MongoUserRepository) SearchStaff(
+	ctx context.Context,
+	query string,
+) ([]models.User, error) {
+
+	query = strings.TrimSpace(query)
+
+	filter := bson.M{
+		"role": bson.M{
+			"$ne": models.RoleCustomer,
+		},
+	}
+
+	if query != "" {
+
+		regex := bson.Regex{
+			Pattern: query,
+			Options: "i",
+		}
+
+		filter = bson.M{
+			"role": bson.M{
+				"$ne": models.RoleCustomer,
+			},
+			"$or": []bson.M{
+				{"first_name": regex},
+				{"last_name": regex},
+				{"email": regex},
+				{"phone": regex},
+				{"role": regex},
+			},
+		}
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{
+			{Key: "first_name", Value: 1},
+			{Key: "last_name", Value: 1},
+		})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var staff []models.User
+
+	if err := cursor.All(ctx, &staff); err != nil {
+		return nil, err
+	}
+
+	return staff, nil
 }

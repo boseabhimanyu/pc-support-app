@@ -68,3 +68,22 @@ func (h *UserHandler) SetStaffPassword(c *gin.Context) {
 		"message": "staff password set successfully",
 	})
 }
+
+func (h *UserHandler) SearchStaff(c *gin.Context) {
+
+	query := c.Query("q")
+
+	staff, err := h.userService.SearchStaff(
+		c.Request.Context(),
+		query,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, staff)
+}

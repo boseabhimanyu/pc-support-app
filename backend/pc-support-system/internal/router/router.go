@@ -178,6 +178,14 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					userHandler.SetStaffPassword,
 				)
+				staff.GET(
+					"/search",
+					auth.RequireRoles(
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					userHandler.SearchStaff,
+				)
 			}
 		}
 	}

@@ -28,3 +28,13 @@ type ChangeStaffRoleRequest struct {
 type ChangeStaffStateRequest struct {
 	State models.UserState `json:"state" binding:"required"`
 }
+
+type StaffSummary struct {
+	ID        string           `json:"id"`
+	FirstName string           `json:"firstName"`
+	LastName  string           `json:"lastName"`
+	Email     string           `json:"email"`
+	Phone     string           `json:"phone"`
+	Role      models.Role      `json:"role"`
+	State     models.UserState `json:"state"`
+}
