@@ -132,16 +132,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				),
 				userHandler.SetCustomerPassword,
 			)
-			protected.POST(
-				"/jobs",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleHeadTechnician),
-					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
-				),
-				jobHandler.CreateJob,
-			)
+
 			protected.PATCH(
 				"/customers/:customerId",
 				auth.RequireRoles(
@@ -159,6 +150,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 			// 	),
 			// 	userHandler.CustomerState,
 			// )
+
 			staff := protected.Group("/staff")
 			{
 				staff.POST(
@@ -195,6 +187,31 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					userHandler.UpdateStaff,
 				)
+
+			}
+			jobs := protected.Group("/jobs")
+			{
+				jobs.POST(
+					"",
+					auth.RequireRoles(
+						string(models.RoleReceptionist),
+						string(models.RoleHeadTechnician),
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					jobHandler.CreateJob,
+				)
+
+				jobs.GET(
+					"/open",
+					auth.RequireRoles(
+						string(models.RoleHeadTechnician),
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					jobHandler.GetOpenJobs,
+				)
+
 			}
 		}
 	}

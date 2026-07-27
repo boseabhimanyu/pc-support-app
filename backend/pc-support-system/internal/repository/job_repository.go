@@ -11,6 +11,7 @@ type JobRepository interface {
 	Create(ctx context.Context, job *models.Job) error
 
 	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device
+	FindOpenUnassigned(ctx context.Context) ([]*models.Job, error)
 
 	FindByID(ctx context.Context, id bson.ObjectID) (*models.Job, error)
 

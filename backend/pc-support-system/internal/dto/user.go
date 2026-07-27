@@ -88,3 +88,20 @@ type UpdateCustomerRequest struct {
 	Phone     *string `json:"phone"`
 	Email     *string `json:"email"`
 }
+
+func ToUserSummary(user *models.User) UserSummary {
+
+	return UserSummary{
+		ID:        user.ID.Hex(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Role:      user.Role,
+	}
+}
+
+type UserSummary struct {
+	ID        string      `json:"id"`
+	FirstName string      `json:"firstName"`
+	LastName  string      `json:"lastName"`
+	Role      models.Role `json:"role"`
+}

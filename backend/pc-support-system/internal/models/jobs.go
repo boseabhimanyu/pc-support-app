@@ -51,8 +51,8 @@ type Job struct {
 	// Staff
 	CreatedByID bson.ObjectID `bson:"created_by_id" json:"createdById"`
 
-	AssignedByID bson.ObjectID `bson:"assigned_by_id,omitempty" json:"assignedById,omitempty"`
-	AssignedToID bson.ObjectID `bson:"assigned_to_id,omitempty" json:"assignedToId,omitempty"`
+	AssignedToID *bson.ObjectID `bson:"assigned_to_id,omitempty" json:"assignedToId,omitempty"`
+	AssignedByID *bson.ObjectID `bson:"assigned_by_id,omitempty" json:"assignedById,omitempty"`
 
 	ClosedByID bson.ObjectID `bson:"closed_by_id,omitempty" json:"closedById,omitempty"`
 

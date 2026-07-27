@@ -74,3 +74,13 @@ func ToCustomerSummary(user *models.User) CustomerSummary {
 		Phone:     user.Phone,
 	}
 }
+
+func ToDeviceSummary(device *models.Device) DeviceSummary {
+
+	return DeviceSummary{
+		ID:           device.ID.Hex(),
+		Brand:        device.Brand,
+		Model:        device.Model,
+		SerialNumber: device.SerialNumber,
+	}
+}

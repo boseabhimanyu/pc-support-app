@@ -8,6 +8,7 @@ import (
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type MongoJobRepository struct {
@@ -108,4 +109,37 @@ func (r *MongoJobRepository) GenerateJobNumber(
 	jobNumber := fmt.Sprintf("%s%04d", prefix, next)
 
 	return jobNumber, nil
+}
+
+func (r *MongoJobRepository) FindOpenUnassigned(
+	ctx context.Context,
+) ([]*models.Job, error) {
+
+	filter := bson.M{
+		"status":         models.JobCreated,
+		"assigned_to_id": bson.M{"$exists": false},
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{
+			{Key: "created_at", Value: 1},
+		})
+
+	cursor, err := r.collection.Find(
+		ctx,
+		filter,
+		opts,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var jobs []*models.Job
+
+	if err := cursor.All(ctx, &jobs); err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
 }

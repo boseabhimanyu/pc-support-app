@@ -171,3 +171,32 @@ func (s *JobService) CreateJob(
 
 	return &resp, nil
 }
+
+func (s *JobService) GetOpenJobs(
+	ctx context.Context,
+) ([]dto.JobResponse, error) {
+
+	jobs, err := s.jobRepo.FindOpenUnassigned(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		customer, _ := s.userRepo.FindByID(ctx, job.CustomerID)
+		device, _ := s.deviceRepo.FindByID(ctx, job.DeviceID)
+		creator, _ := s.userRepo.FindByID(ctx, job.CreatedByID)
+
+		resp = append(resp, dto.ToJobResponse(
+			job,
+			dto.ToCustomerSummary(customer),
+			dto.ToDeviceSummary(device),
+			dto.ToUserSummary(creator),
+			nil,
+		))
+	}
+
+	return resp, nil
+}
