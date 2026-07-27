@@ -3,13 +3,13 @@ package services
 import (
 	"context"
 	"errors"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/validation"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -59,60 +59,77 @@ func (s *UserService) UpdateProfile(
 		return nil, errors.New("user not found")
 	}
 
+	// First Name
 	if req.FirstName != nil {
-		user.FirstName = *req.FirstName
-	}
 
-	if req.LastName != nil {
-		user.LastName = *req.LastName
-	}
-	// Check email uniqueness
-	if req.Email != nil {
-
-		if strings.TrimSpace(*req.Email) == "" {
-			return nil, errors.New("email cannot be empty")
+		firstName, err := validation.ValidateName(*req.FirstName)
+		if err != nil {
+			return nil, err
 		}
 
-		if *req.Email != user.Email {
-			existing, err := s.userRepo.FindByEmail(ctx, *req.Email)
+		user.FirstName = firstName
+	}
+
+	// Last Name
+	if req.LastName != nil {
+
+		lastName, err := validation.ValidateName(*req.LastName)
+		if err != nil {
+			return nil, err
+		}
+
+		user.LastName = lastName
+	}
+
+	// Email
+	if req.Email != nil {
+
+		email, err := validation.ValidateEmail(*req.Email, false)
+		if err != nil {
+			return nil, err
+		}
+
+		if email != user.Email {
+
+			existing, err := s.userRepo.FindByEmail(ctx, email)
 			if err != nil {
 				return nil, err
 			}
 
-			if existing != nil {
+			if existing != nil && existing.ID != user.ID {
 				return nil, errors.New("email already in use with another user")
 			}
 		}
 
-		user.Email = *req.Email
+		user.Email = email
 	}
 
-	// Check phone uniqueness
+	// Phone
 	if req.Phone != nil {
 
-		if strings.TrimSpace(*req.Phone) == "" {
-			return nil, errors.New("phone cannot be empty")
+		phone, err := validation.ValidatePhone(*req.Phone)
+		if err != nil {
+			return nil, err
 		}
 
-		if *req.Phone != user.Phone {
-			existing, err := s.userRepo.FindByPhone(ctx, *req.Phone)
+		if phone != user.Phone {
+
+			existing, err := s.userRepo.FindByPhone(ctx, phone)
 			if err != nil {
 				return nil, err
 			}
 
-			if existing != nil {
+			if existing != nil && existing.ID != user.ID {
 				return nil, errors.New("phone number already in use with another user")
 			}
 		}
 
-		user.Phone = *req.Phone
+		user.Phone = phone
 	}
 
 	user.UpdatedAt = time.Now()
 
-	// Save
-	err = s.userRepo.Update(ctx, user)
-	if err != nil {
+	if err := s.userRepo.Update(ctx, user); err != nil {
 		return nil, err
 	}
 
@@ -146,13 +163,29 @@ func (s *UserService) CreateCustomer(
 	req dto.CreateCustomerRequest,
 ) (*dto.CustomerResponse, error) {
 
-	req.FirstName = strings.TrimSpace(req.FirstName)
-	req.LastName = strings.TrimSpace(req.LastName)
-	req.Phone = strings.TrimSpace(req.Phone)
-	if matched, _ := regexp.MatchString(`^[0-9]+$`, req.Phone); !matched {
-		return nil, errors.New("invalid phone number")
+	var err error
+
+	req.FirstName, err = validation.ValidateName(req.FirstName)
+	if err != nil {
+		return nil, err
 	}
-	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
+
+	if req.LastName != "" {
+		req.LastName, err = validation.ValidateName(req.LastName)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req.Phone, err = validation.ValidatePhone(req.Phone)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Email, err = validation.ValidateEmail(req.Email, false)
+	if err != nil {
+		return nil, err
+	}
 
 	// Phone must be unique
 	existingPhone, err := s.userRepo.FindByPhone(ctx, req.Phone)
@@ -182,7 +215,6 @@ func (s *UserService) CreateCustomer(
 		return nil, errors.New("invalid user")
 	}
 
-	// Verify creator exists
 	creator, err := s.userRepo.FindByID(ctx, createdByID)
 	if err != nil {
 		return nil, err
@@ -274,19 +306,16 @@ func (s *UserService) UpdateCustomer(
 	req dto.UpdateCustomerRequest,
 ) (*dto.CustomerResponse, error) {
 
-	// Customer ID
 	customerObjectID, err := bson.ObjectIDFromHex(customerID)
 	if err != nil {
 		return nil, errors.New("invalid customer id")
 	}
 
-	// Updater ID
 	updatedByID, err := bson.ObjectIDFromHex(updatedBy)
 	if err != nil {
 		return nil, errors.New("invalid user")
 	}
 
-	// Customer
 	customer, err := s.userRepo.FindByID(ctx, customerObjectID)
 	if err != nil {
 		return nil, err
@@ -300,7 +329,6 @@ func (s *UserService) UpdateCustomer(
 		return nil, errors.New("invalid customer")
 	}
 
-	// Updater
 	updater, err := s.userRepo.FindByID(ctx, updatedByID)
 	if err != nil {
 		return nil, err
@@ -311,22 +339,33 @@ func (s *UserService) UpdateCustomer(
 	}
 
 	// First Name
-	if req.FirstName != "" {
-		customer.FirstName = strings.TrimSpace(req.FirstName)
+	if req.FirstName != nil {
+
+		firstName, err := validation.ValidateName(*req.FirstName)
+		if err != nil {
+			return nil, err
+		}
+
+		customer.FirstName = firstName
 	}
 
 	// Last Name
-	if req.LastName != "" {
-		customer.LastName = strings.TrimSpace(req.LastName)
+	if req.LastName != nil {
+
+		lastName, err := validation.ValidateName(*req.LastName)
+		if err != nil {
+			return nil, err
+		}
+
+		customer.LastName = lastName
 	}
 
 	// Phone
-	if req.Phone != "" {
+	if req.Phone != nil {
 
-		phone := strings.TrimSpace(req.Phone)
-
-		if matched, _ := regexp.MatchString(`^[0-9]+$`, phone); !matched {
-			return nil, errors.New("invalid phone number")
+		phone, err := validation.ValidatePhone(*req.Phone)
+		if err != nil {
+			return nil, err
 		}
 
 		existingPhone, err := s.userRepo.FindByPhone(ctx, phone)
@@ -342,17 +381,22 @@ func (s *UserService) UpdateCustomer(
 	}
 
 	// Email
-	if req.Email != "" {
+	if req.Email != nil {
 
-		email := strings.TrimSpace(strings.ToLower(req.Email))
-
-		existingEmail, err := s.userRepo.FindByEmail(ctx, email)
+		email, err := validation.ValidateEmail(*req.Email, false)
 		if err != nil {
 			return nil, err
 		}
 
-		if existingEmail != nil && existingEmail.ID != customer.ID {
-			return nil, errors.New("email already exists")
+		if email != "" {
+			existingEmail, err := s.userRepo.FindByEmail(ctx, email)
+			if err != nil {
+				return nil, err
+			}
+
+			if existingEmail != nil && existingEmail.ID != customer.ID {
+				return nil, errors.New("email already exists")
+			}
 		}
 
 		customer.Email = email

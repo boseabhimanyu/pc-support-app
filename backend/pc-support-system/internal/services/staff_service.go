@@ -3,12 +3,12 @@ package services
 import (
 	"context"
 	"errors"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/validation"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,14 +19,28 @@ func (s *UserService) CreateStaff(
 	req dto.CreateStaffRequest,
 ) (*dto.UserResponse, error) {
 
-	req.FirstName = strings.TrimSpace(req.FirstName)
-	req.LastName = strings.TrimSpace(req.LastName)
-	req.Phone = strings.TrimSpace(req.Phone)
+	var err error
 
-	if matched, _ := regexp.MatchString(`^[0-9]+$`, req.Phone); !matched {
-		return nil, errors.New("invalid phone number")
+	// Validate & normalize input
+	req.FirstName, err = validation.ValidateName(req.FirstName)
+	if err != nil {
+		return nil, err
 	}
-	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
+
+	req.LastName, err = validation.ValidateName(req.LastName)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Phone, err = validation.ValidatePhone(req.Phone)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Email, err = validation.ValidateEmail(req.Email, true)
+	if err != nil {
+		return nil, err
+	}
 
 	// Phone must be unique
 	existingPhone, err := s.userRepo.FindByPhone(ctx, req.Phone)
@@ -39,7 +53,6 @@ func (s *UserService) CreateStaff(
 	}
 
 	// Email must be unique
-
 	if req.Email != "" {
 
 		existingEmail, err := s.userRepo.FindByEmail(ctx, req.Email)
@@ -52,6 +65,7 @@ func (s *UserService) CreateStaff(
 		}
 	}
 
+	// Validate role
 	switch req.Role {
 	case models.RoleReceptionist,
 		models.RoleTechnician,
@@ -67,7 +81,6 @@ func (s *UserService) CreateStaff(
 		return nil, errors.New("invalid user")
 	}
 
-	// Verify creator exists
 	creator, err := s.userRepo.FindByID(ctx, createdByID)
 	if err != nil {
 		return nil, err
@@ -81,11 +94,6 @@ func (s *UserService) CreateStaff(
 		return nil, errors.New("creator account is inactive")
 	}
 
-	if creator.Role == models.RoleAdmin &&
-		req.Role == models.RoleAdmin {
-		return nil, errors.New("admin cannot create another admin")
-	}
-
 	switch creator.Role {
 	case models.RoleAdmin,
 		models.RoleSuperAdmin:
@@ -93,6 +101,12 @@ func (s *UserService) CreateStaff(
 	default:
 		return nil, errors.New("user cannot create staff")
 	}
+
+	if creator.Role == models.RoleAdmin &&
+		req.Role == models.RoleAdmin {
+		return nil, errors.New("admin cannot create another admin")
+	}
+
 	now := time.Now()
 
 	user := &models.User{
@@ -101,8 +115,7 @@ func (s *UserService) CreateStaff(
 		Phone:     req.Phone,
 		Email:     req.Email,
 
-		Role: req.Role,
-
+		Role:  req.Role,
 		State: models.UserActive,
 
 		PasswordHash: "",
@@ -120,7 +133,6 @@ func (s *UserService) CreateStaff(
 	resp := dto.ToUserResponse(user)
 
 	return &resp, nil
-
 }
 
 func (s *UserService) SetStaffPassword(
@@ -287,23 +299,34 @@ func (s *UserService) UpdateStaff(
 		return nil, errors.New("user cannot update staff")
 	}
 
-	// Update first name
-	if req.FirstName != "" {
-		staff.FirstName = strings.TrimSpace(req.FirstName)
+	// First Name
+	if req.FirstName != nil {
+
+		firstName, err := validation.ValidateName(*req.FirstName)
+		if err != nil {
+			return nil, err
+		}
+
+		staff.FirstName = firstName
 	}
 
-	// Update last name
-	if req.LastName != "" {
-		staff.LastName = strings.TrimSpace(req.LastName)
+	// Last Name
+	if req.LastName != nil {
+
+		lastName, err := validation.ValidateName(*req.LastName)
+		if err != nil {
+			return nil, err
+		}
+
+		staff.LastName = lastName
 	}
 
-	// Update phone
-	if req.Phone != "" {
+	// Phone
+	if req.Phone != nil {
 
-		phone := strings.TrimSpace(req.Phone)
-
-		if matched, _ := regexp.MatchString(`^[0-9]+$`, phone); !matched {
-			return nil, errors.New("invalid phone number")
+		phone, err := validation.ValidatePhone(*req.Phone)
+		if err != nil {
+			return nil, err
 		}
 
 		existingPhone, err := s.userRepo.FindByPhone(ctx, phone)
@@ -318,18 +341,23 @@ func (s *UserService) UpdateStaff(
 		staff.Phone = phone
 	}
 
-	// Update email
-	if req.Email != "" {
+	// Email
+	if req.Email != nil {
 
-		email := strings.TrimSpace(strings.ToLower(req.Email))
-
-		existingEmail, err := s.userRepo.FindByEmail(ctx, email)
+		email, err := validation.ValidateEmail(*req.Email, true)
 		if err != nil {
 			return nil, err
 		}
 
-		if existingEmail != nil && existingEmail.ID != staff.ID {
-			return nil, errors.New("email already exists")
+		if email != "" {
+			existingEmail, err := s.userRepo.FindByEmail(ctx, email)
+			if err != nil {
+				return nil, err
+			}
+
+			if existingEmail != nil && existingEmail.ID != staff.ID {
+				return nil, errors.New("email already exists")
+			}
 		}
 
 		staff.Email = email

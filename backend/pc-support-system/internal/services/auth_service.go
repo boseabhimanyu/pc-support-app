@@ -3,12 +3,12 @@ package services
 import (
 	"context"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/validation"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,7 +24,34 @@ func NewAuthService(repo repository.UserRepository) *AuthService {
 
 func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) error {
 
-	// 1. Check if phone already exists
+	var err error
+
+	// Validate & normalize input
+	req.FirstName, err = validation.ValidateName(req.FirstName)
+	if err != nil {
+		return err
+	}
+
+	if req.LastName != "" {
+		req.LastName, err = validation.ValidateName(req.LastName)
+		if err != nil {
+			return err
+		}
+	}
+
+	req.Phone, err = validation.ValidatePhone(req.Phone)
+	if err != nil {
+		return err
+	}
+
+	req.Email, err = validation.ValidateEmail(req.Email, false)
+	if err != nil {
+		return err
+	}
+
+	// Password validation can be added later
+
+	// Check if phone already exists
 	existingUser, err := s.userRepo.FindByPhone(ctx, req.Phone)
 	if err != nil {
 		return err
@@ -34,16 +61,20 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) err
 		return errors.New("phone number already exists")
 	}
 
-	// 2. Check if email already exists (only if email is provided)
-	existingUser, err = s.userRepo.FindByEmail(ctx, req.Email)
-	if err != nil {
-		return err
+	// Check if email already exists (only if provided)
+	if req.Email != "" {
+
+		existingUser, err = s.userRepo.FindByEmail(ctx, req.Email)
+		if err != nil {
+			return err
+		}
+
+		if existingUser != nil {
+			return errors.New("email already exists")
+		}
 	}
 
-	if existingUser != nil {
-		return errors.New("email already exists")
-	}
-
+	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
 		bcrypt.DefaultCost,
@@ -52,28 +83,36 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) err
 		return err
 	}
 
-	// 3. Create the user
+	now := time.Now()
+
+	// Create user
 	user := &models.User{
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
 		Email:        req.Email,
 		Phone:        req.Phone,
 		PasswordHash: string(hashedPassword),
-		Role:         models.RoleCustomer,
-		State:        models.UserActive,
 
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Role:  models.RoleCustomer,
+		State: models.UserActive,
+
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
-	// 4. Save to MongoDB
+	// Save
 	return s.userRepo.Create(ctx, user)
 }
 
 func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*models.User, error) {
 
-	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
-	// Find user by email
+	var err error
+
+	req.Email, err = validation.ValidateEmail(req.Email, false)
+	if err != nil {
+		return nil, err
+	}
+
 	user, err := s.userRepo.FindByEmail(ctx, req.Email)
 
 	if err != nil {

@@ -15,8 +15,8 @@ type UserResponse struct {
 type UpdateProfileRequest struct {
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
-	Email     *string `json:"email" binding:"omitempty,email"`
-	Phone     *string `json:"phone" binding:"omitempty,numeric"`
+	Email     *string `json:"email"`
+	Phone     *string `json:"phone"`
 }
 
 type ChangePasswordRequest struct {
@@ -83,8 +83,8 @@ type SetCustomerPasswordRequest struct {
 }
 
 type UpdateCustomerRequest struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+	Phone     *string `json:"phone"`
+	Email     *string `json:"email"`
 }

@@ -90,11 +90,12 @@ func (r *MongoUserRepository) Update(
 
 	update := bson.M{
 		"$set": bson.M{
-			"first_name": user.FirstName,
-			"last_name":  user.LastName,
-			"email":      user.Email,
-			"phone":      user.Phone,
-			"updated_at": user.UpdatedAt,
+			"first_name":    user.FirstName,
+			"last_name":     user.LastName,
+			"email":         user.Email,
+			"phone":         user.Phone,
+			"updated_at":    user.UpdatedAt,
+			"updated_by_id": user.UpdatedByID,
 		},
 	}
 

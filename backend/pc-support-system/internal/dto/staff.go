@@ -6,15 +6,15 @@ type CreateStaffRequest struct {
 	FirstName string      `json:"firstName" binding:"required"`
 	LastName  string      `json:"lastName" binding:"required"`
 	Phone     string      `json:"phone" binding:"required"`
-	Email     string      `json:"email" binding:"required,email"`
+	Email     string      `json:"email" binding:"required"`
 	Role      models.Role `json:"role" binding:"required"`
 }
 
 type UpdateStaffRequest struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+	Phone     *string `json:"phone"`
+	Email     *string `json:"email"`
 }
 
 type SetStaffPasswordRequest struct {

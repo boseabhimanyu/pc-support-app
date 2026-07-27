@@ -4,14 +4,14 @@ import "github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/intern
 
 type RegisterRequest struct {
 	FirstName string `json:"firstName" binding:"required,min=2,max=50"`
-	LastName  string `json:"lastName" binding:"max=50"`
-	Email     string `json:"email" binding:"omitempty,email"`
-	Phone     string `json:"phone" binding:"required,numeric"`
+	LastName  string `json:"lastName" binding:"omitempty,max=50"`
+	Email     string `json:"email" binding:"omitempty,email,max=100"`
+	Phone     string `json:"phone" binding:"required,numeric,len=10"`
 	Password  string `json:"password" binding:"required,min=8,max=64"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
+	Email    string `json:"email" binding:"required,email,max=100"`
 	Password string `json:"password" binding:"required"`
 }
 
