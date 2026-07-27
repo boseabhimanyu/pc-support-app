@@ -181,6 +181,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				staff.GET(
 					"/search",
 					auth.RequireRoles(
+						string(models.RoleHeadTechnician),
 						string(models.RoleAdmin),
 						string(models.RoleSuperAdmin),
 					),
