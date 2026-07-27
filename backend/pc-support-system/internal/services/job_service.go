@@ -174,7 +174,7 @@ func (s *JobService) CreateJob(
 
 func (s *JobService) GetOpenJobs(
 	ctx context.Context,
-) ([]dto.JobResponse, error) {
+) (*dto.OpenJobsResponse, error) {
 
 	jobs, err := s.jobRepo.FindOpenUnassigned(ctx)
 	if err != nil {
@@ -198,5 +198,8 @@ func (s *JobService) GetOpenJobs(
 		))
 	}
 
-	return resp, nil
+	return &dto.OpenJobsResponse{
+		OpenJobsCount: len(resp),
+		Jobs:          resp,
+	}, nil
 }

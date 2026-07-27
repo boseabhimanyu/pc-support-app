@@ -76,3 +76,8 @@ type OpenJobResponse struct {
 	Status     models.JobStatus `json:"status"`
 	CreatedAt  time.Time        `json:"createdAt"`
 }
+
+type OpenJobsResponse struct {
+	OpenJobsCount int           `json:"openJobsCount"`
+	Jobs          []JobResponse `json:"jobs"`
+}
