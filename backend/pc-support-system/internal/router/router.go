@@ -187,6 +187,14 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					userHandler.SearchStaff,
 				)
+				staff.PATCH(
+					"/:staffId",
+					auth.RequireRoles(
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					userHandler.UpdateStaff,
+				)
 			}
 		}
 	}

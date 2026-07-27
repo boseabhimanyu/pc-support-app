@@ -231,3 +231,118 @@ func (s *UserService) SearchStaff(
 
 	return response, nil
 }
+
+func (s *UserService) UpdateStaff(
+	ctx context.Context,
+	staffID string,
+	updatedBy string,
+	req dto.UpdateStaffRequest,
+) (*dto.UserResponse, error) {
+
+	// Staff ID
+	staffObjectID, err := bson.ObjectIDFromHex(staffID)
+	if err != nil {
+		return nil, errors.New("invalid staff id")
+	}
+
+	// Updater ID
+	updatedByID, err := bson.ObjectIDFromHex(updatedBy)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	// Staff
+	staff, err := s.userRepo.FindByID(ctx, staffObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if staff == nil {
+		return nil, errors.New("staff not found")
+	}
+
+	if staff.Role == models.RoleCustomer {
+		return nil, errors.New("invalid staff")
+	}
+
+	// Updater
+	updater, err := s.userRepo.FindByID(ctx, updatedByID)
+	if err != nil {
+		return nil, err
+	}
+
+	if updater == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if updater.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch updater.Role {
+	case models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+	default:
+		return nil, errors.New("user cannot update staff")
+	}
+
+	// Update first name
+	if req.FirstName != "" {
+		staff.FirstName = strings.TrimSpace(req.FirstName)
+	}
+
+	// Update last name
+	if req.LastName != "" {
+		staff.LastName = strings.TrimSpace(req.LastName)
+	}
+
+	// Update phone
+	if req.Phone != "" {
+
+		phone := strings.TrimSpace(req.Phone)
+
+		if matched, _ := regexp.MatchString(`^[0-9]+$`, phone); !matched {
+			return nil, errors.New("invalid phone number")
+		}
+
+		existingPhone, err := s.userRepo.FindByPhone(ctx, phone)
+		if err != nil {
+			return nil, err
+		}
+
+		if existingPhone != nil && existingPhone.ID != staff.ID {
+			return nil, errors.New("phone number already exists")
+		}
+
+		staff.Phone = phone
+	}
+
+	// Update email
+	if req.Email != "" {
+
+		email := strings.TrimSpace(strings.ToLower(req.Email))
+
+		existingEmail, err := s.userRepo.FindByEmail(ctx, email)
+		if err != nil {
+			return nil, err
+		}
+
+		if existingEmail != nil && existingEmail.ID != staff.ID {
+			return nil, errors.New("email already exists")
+		}
+
+		staff.Email = email
+	}
+
+	staff.UpdatedAt = time.Now()
+	staff.UpdatedByID = &updatedByID
+
+	if err := s.userRepo.Update(ctx, staff); err != nil {
+		return nil, err
+	}
+
+	resp := dto.ToUserResponse(staff)
+
+	return &resp, nil
+}

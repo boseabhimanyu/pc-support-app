@@ -87,3 +87,34 @@ func (h *UserHandler) SearchStaff(c *gin.Context) {
 
 	c.JSON(http.StatusOK, staff)
 }
+
+func (h *UserHandler) UpdateStaff(c *gin.Context) {
+
+	staffID := c.Param("staffId")
+	updatedBy := c.GetString("userID")
+
+	var req dto.UpdateStaffRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	staff, err := h.userService.UpdateStaff(
+		c.Request.Context(),
+		staffID,
+		updatedBy,
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, staff)
+}

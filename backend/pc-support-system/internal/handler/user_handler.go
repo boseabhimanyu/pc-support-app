@@ -46,43 +46,6 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (h *UserHandler) UpdateProfile(c *gin.Context) {
-
-	var req dto.UpdateProfileRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	userIDHex := c.GetString("userID")
-
-	userID, err := bson.ObjectIDFromHex(userIDHex)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid user id",
-		})
-		return
-	}
-
-	user, err := h.userService.UpdateProfile(
-		c.Request.Context(),
-		userID,
-		req,
-	)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, user)
-}
-
 func (h *UserHandler) SearchCustomers(c *gin.Context) {
 
 	query := c.Query("q")
