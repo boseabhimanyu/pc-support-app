@@ -88,6 +88,15 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				),
 				jobHandler.GetCustomerJobs,
 			)
+
+			protected.GET(
+				"/me/devices",
+				auth.RequireRoles(
+					string(models.RoleCustomer),
+				),
+				deviceHandler.GetMyDevices,
+			)
+
 			protected.GET(
 				"/customers/:customerId/devices",
 				auth.RequireRoles(

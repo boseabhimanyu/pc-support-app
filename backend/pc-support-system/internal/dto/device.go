@@ -79,8 +79,36 @@ func ToDeviceSummary(device *models.Device) DeviceSummary {
 
 	return DeviceSummary{
 		ID:           device.ID.Hex(),
+		Type:         device.Type,
 		Brand:        device.Brand,
 		Model:        device.Model,
 		SerialNumber: device.SerialNumber,
+	}
+}
+
+type CustomerDevicesResponse struct {
+	DevicesCount int                      `json:"devicesCount"`
+	Devices      []CustomerDeviceResponse `json:"devices"`
+}
+
+type CustomerDeviceResponse struct {
+	ID           string                 `json:"id"`
+	Type         models.DeviceType      `json:"type"`
+	Condition    models.DeviceCondition `json:"condition"`
+	Brand        string                 `json:"brand,omitempty"`
+	Model        string                 `json:"model,omitempty"`
+	SerialNumber string                 `json:"serialNumber,omitempty"`
+	Notes        string                 `json:"notes,omitempty"`
+}
+
+func ToCustomerDeviceResponse(device *models.Device) CustomerDeviceResponse {
+	return CustomerDeviceResponse{
+		ID:           device.ID.Hex(),
+		Type:         device.Type,
+		Condition:    device.Condition,
+		Brand:        device.Brand,
+		Model:        device.Model,
+		SerialNumber: device.SerialNumber,
+		Notes:        device.Notes,
 	}
 }

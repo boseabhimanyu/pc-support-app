@@ -172,6 +172,50 @@ func (s *DeviceService) GetDevice(
 	return &resp, nil
 }
 
+func (s *DeviceService) GetMyDevices(
+	ctx context.Context,
+	userID string,
+) (*dto.CustomerDevicesResponse, error) {
+
+	customerID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	customer, err := s.userRepo.FindByID(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+
+	if customer == nil {
+		return nil, errors.New("customer not found")
+	}
+
+	if customer.Role != models.RoleCustomer {
+		return nil, errors.New("invalid customer")
+	}
+
+	if customer.State != models.UserActive {
+		return nil, errors.New("customer account is inactive")
+	}
+
+	devices, err := s.deviceRepo.FindByCustomerID(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.CustomerDeviceResponse, 0, len(devices))
+
+	for i := range devices {
+		resp = append(resp, dto.ToCustomerDeviceResponse(&devices[i]))
+	}
+
+	return &dto.CustomerDevicesResponse{
+		DevicesCount: len(resp),
+		Devices:      resp,
+	}, nil
+}
+
 // UpdateDevice()
 
 // DeactivateDevice()
