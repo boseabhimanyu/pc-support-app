@@ -324,3 +324,31 @@ func (r *MongoJobRepository) FindByStatuses(
 
 	return jobs, nil
 }
+
+func (r *MongoJobRepository) AddNote(
+	ctx context.Context,
+	jobID bson.ObjectID,
+	note models.JobNote,
+) error {
+
+	filter := bson.M{
+		"_id": jobID,
+	}
+
+	update := bson.M{
+		"$push": bson.M{
+			"notes": note,
+		},
+		"$set": bson.M{
+			"updated_at": time.Now(),
+		},
+	}
+
+	_, err := r.collection.UpdateOne(
+		ctx,
+		filter,
+		update,
+	)
+
+	return err
+}

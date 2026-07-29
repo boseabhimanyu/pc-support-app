@@ -71,7 +71,7 @@ type JobNote struct {
 
 	AuthorID bson.ObjectID `bson:"author_id" json:"authorId"`
 
-	// Store the role at the time of writing
+	// Role when the note was written
 	AuthorRole Role `bson:"author_role" json:"authorRole"`
 
 	Note string `bson:"note" json:"note"`

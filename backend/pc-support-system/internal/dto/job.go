@@ -115,3 +115,22 @@ type JobQueueResponse struct {
 	JobsCount int           `json:"jobsCount"`
 	Jobs      []JobResponse `json:"jobs"`
 }
+
+type JobNoteResponse struct {
+	ID string `json:"id"`
+
+	Author UserSummary `json:"author"`
+
+	Note string `json:"note"`
+
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type JobNotesResponse struct {
+	NotesCount int               `json:"notesCount"`
+	Notes      []JobNoteResponse `json:"notes"`
+}
+
+type AddJobNoteRequest struct {
+	Note string `json:"note" binding:"required"`
+}

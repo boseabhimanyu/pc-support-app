@@ -225,3 +225,35 @@ func (h *JobHandler) GetResumedJobs(c *gin.Context) {
 
 	c.JSON(http.StatusOK, jobs)
 }
+
+func (h *JobHandler) AddJobNote(c *gin.Context) {
+
+	jobID := c.Param("jobId")
+	userID := c.GetString("userID")
+
+	var req dto.AddJobNoteRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := h.jobService.AddJobNote(
+		c.Request.Context(),
+		jobID,
+		userID,
+		req,
+	); err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "job note added successfully",
+	})
+}

@@ -288,6 +288,15 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					jobHandler.ChangeJobStatus,
 				)
+				jobs.POST(
+					"/:jobId/notes",
+					auth.RequireRoles(
+						string(models.RoleReceptionist),
+						string(models.RoleTechnician),
+						string(models.RoleHeadTechnician),
+					),
+					jobHandler.AddJobNote,
+				)
 
 			}
 		}

@@ -659,3 +659,90 @@ func (s *JobService) GetResumedJobs(
 		Jobs:      resp,
 	}, nil
 }
+
+func (s *JobService) AddJobNote(
+	ctx context.Context,
+	jobID string,
+	userID string,
+	req dto.AddJobNoteRequest,
+) error {
+
+	req.Note = strings.TrimSpace(req.Note)
+
+	if req.Note == "" {
+		return errors.New("note is required")
+	}
+
+	if len(req.Note) > 2000 {
+		return errors.New("note cannot exceed 2000 characters")
+	}
+
+	jobObjectID, err := bson.ObjectIDFromHex(jobID)
+	if err != nil {
+		return errors.New("invalid job id")
+	}
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return errors.New("invalid user")
+	}
+
+	job, err := s.jobRepo.FindByID(ctx, jobObjectID)
+	if err != nil {
+		return err
+	}
+
+	if job == nil {
+		return errors.New("job not found")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	if user.State != models.UserActive {
+		return errors.New("user account is inactive")
+	}
+
+	// Closed jobs cannot receive notes
+	if job.Status == models.JobClosed {
+		return errors.New("cannot add notes to a closed job")
+	}
+
+	switch user.Role {
+
+	case models.RoleReceptionist:
+		// Receptionists can add customer communication notes until the job is closed.
+	case models.RoleTechnician, models.RoleHeadTechnician:
+
+		if job.AssignedToID == nil {
+			return errors.New("job is not assigned")
+		}
+
+		if *job.AssignedToID != user.ID {
+			return errors.New("job is not assigned to you")
+		}
+
+	default:
+		return errors.New("user cannot add job notes")
+	}
+
+	note := models.JobNote{
+		ID:         bson.NewObjectID(),
+		AuthorID:   user.ID,
+		AuthorRole: user.Role,
+		Note:       req.Note,
+		CreatedAt:  time.Now(),
+	}
+
+	return s.jobRepo.AddNote(
+		ctx,
+		job.ID,
+		note,
+	)
+}

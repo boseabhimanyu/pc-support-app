@@ -28,6 +28,8 @@ type JobRepository interface {
 
 	FindByStatuses(ctx context.Context, statuses []models.JobStatus) ([]*models.Job, error)
 
+	AddNote(ctx context.Context, jobID bson.ObjectID, note models.JobNote) error
+
 	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device
 
 	GenerateJobNumber(ctx context.Context) (string, error)
