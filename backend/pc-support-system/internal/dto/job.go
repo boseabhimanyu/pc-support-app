@@ -96,3 +96,8 @@ type MyJobsResponse struct {
 	MyJobsCount int           `json:"myJobsCount"`
 	Jobs        []JobResponse `json:"jobs"`
 }
+
+type CustomerJobsResponse struct {
+	JobsCount int           `json:"jobsCount"`
+	Jobs      []JobResponse `json:"jobs"`
+}

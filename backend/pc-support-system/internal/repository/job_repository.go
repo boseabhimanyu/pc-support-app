@@ -20,6 +20,8 @@ type JobRepository interface {
 
 	FindByID(ctx context.Context, id bson.ObjectID) (*models.Job, error)
 
+	FindCustomerJobs(ctx context.Context, customerID bson.ObjectID) ([]*models.Job, error)
+
 	FindByJobNumber(ctx context.Context, jobNumber string) (*models.Job, error)
 
 	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device

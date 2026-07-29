@@ -231,3 +231,32 @@ func (r *MongoJobRepository) FindMyJobs(
 
 	return jobs, nil
 }
+
+func (r *MongoJobRepository) FindCustomerJobs(
+	ctx context.Context,
+	customerID bson.ObjectID,
+) ([]*models.Job, error) {
+
+	filter := bson.M{
+		"customer_id": customerID,
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{
+			{Key: "created_at", Value: -1},
+		})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var jobs []*models.Job
+
+	if err := cursor.All(ctx, &jobs); err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}

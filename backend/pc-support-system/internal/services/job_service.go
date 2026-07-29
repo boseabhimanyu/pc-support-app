@@ -396,3 +396,53 @@ func (s *JobService) buildJobResponse(
 
 	return &resp, nil
 }
+
+func (s *JobService) GetCustomerJobs(
+	ctx context.Context,
+	userID string,
+) (*dto.CustomerJobsResponse, error) {
+
+	customerID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	customer, err := s.userRepo.FindByID(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+
+	if customer == nil {
+		return nil, errors.New("customer not found")
+	}
+
+	if customer.Role != models.RoleCustomer {
+		return nil, errors.New("invalid customer")
+	}
+
+	if customer.State != models.UserActive {
+		return nil, errors.New("customer account is inactive")
+	}
+
+	jobs, err := s.jobRepo.FindCustomerJobs(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		jobResp, err := s.buildJobResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, *jobResp)
+	}
+
+	return &dto.CustomerJobsResponse{
+		JobsCount: len(resp),
+		Jobs:      resp,
+	}, nil
+}
