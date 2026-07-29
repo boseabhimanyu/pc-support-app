@@ -229,6 +229,14 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					jobHandler.GetAssignedJobs,
 				)
+				jobs.GET(
+					"/my",
+					auth.RequireRoles(
+						string(models.RoleTechnician),
+						string(models.RoleHeadTechnician),
+					),
+					jobHandler.GetMyJobs,
+				)
 
 			}
 		}

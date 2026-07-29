@@ -298,6 +298,60 @@ func (s *JobService) AssignJob(
 	return s.buildJobResponse(ctx, job)
 }
 
+func (s *JobService) GetMyJobs(
+	ctx context.Context,
+	userID string,
+) (*dto.MyJobsResponse, error) {
+
+	staffID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	staff, err := s.userRepo.FindByID(ctx, staffID)
+	if err != nil {
+		return nil, err
+	}
+
+	if staff == nil {
+		return nil, errors.New("user not found")
+	}
+
+	switch staff.Role {
+	case models.RoleTechnician,
+		models.RoleHeadTechnician:
+		// allowed
+	default:
+		return nil, errors.New("user cannot access technician jobs")
+	}
+
+	if staff.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	jobs, err := s.jobRepo.FindMyJobs(ctx, staffID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		jobResp, err := s.buildJobResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, *jobResp)
+	}
+
+	return &dto.MyJobsResponse{
+		MyJobsCount: len(resp),
+		Jobs:        resp,
+	}, nil
+}
+
 func (s *JobService) buildJobResponse(
 	ctx context.Context,
 	job *models.Job,

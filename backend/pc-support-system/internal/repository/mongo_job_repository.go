@@ -80,11 +80,6 @@ func (r *MongoJobRepository) FindByJobNumber(
 	return &job, nil
 }
 
-// func (r *MongoJobRepository) FindByStatus(
-// 	ctx context.Context,
-// 	status models.JobStatus,
-// ) ([]models.Job, error)
-
 func (r *MongoJobRepository) GenerateJobNumber(
 	ctx context.Context,
 ) (string, error) {
@@ -186,6 +181,43 @@ func (r *MongoJobRepository) FindOpenAssigned(
 		filter,
 		opts,
 	)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var jobs []*models.Job
+
+	if err := cursor.All(ctx, &jobs); err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}
+
+func (r *MongoJobRepository) FindMyJobs(
+	ctx context.Context,
+	staffID bson.ObjectID,
+) ([]*models.Job, error) {
+
+	filter := bson.M{
+		"assigned_to_id": staffID,
+		"status": bson.M{
+			"$in": []models.JobStatus{
+				models.JobAssigned,
+				models.JobInProgress,
+				models.JobWaitingCustomer,
+				models.JobResumed,
+			},
+		},
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{
+			{Key: "updated_at", Value: -1},
+		})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}

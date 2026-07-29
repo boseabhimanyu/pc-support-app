@@ -108,3 +108,22 @@ func (h *JobHandler) GetAssignedJobs(c *gin.Context) {
 
 	c.JSON(http.StatusOK, jobs)
 }
+
+func (h *JobHandler) GetMyJobs(c *gin.Context) {
+
+	userID := c.GetString("userID")
+
+	jobs, err := h.jobService.GetMyJobs(
+		c.Request.Context(),
+		userID,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobs)
+}
