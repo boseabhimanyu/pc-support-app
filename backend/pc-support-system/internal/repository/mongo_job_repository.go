@@ -260,3 +260,67 @@ func (r *MongoJobRepository) FindCustomerJobs(
 
 	return jobs, nil
 }
+
+func (r *MongoJobRepository) UpdateStatus(
+	ctx context.Context,
+	jobID bson.ObjectID,
+	status models.JobStatus,
+) error {
+
+	update := bson.M{
+		"$set": bson.M{
+			"status":     status,
+			"updated_at": time.Now(),
+		},
+	}
+
+	result, err := r.collection.UpdateByID(
+		ctx,
+		jobID,
+		update,
+	)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+func (r *MongoJobRepository) FindByStatuses(
+	ctx context.Context,
+	statuses []models.JobStatus,
+) ([]*models.Job, error) {
+
+	filter := bson.M{
+		"status": bson.M{
+			"$in": statuses,
+		},
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{
+			{Key: "created_at", Value: 1},
+		})
+
+	cursor, err := r.collection.Find(
+		ctx,
+		filter,
+		opts,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var jobs []*models.Job
+
+	if err := cursor.All(ctx, &jobs); err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}

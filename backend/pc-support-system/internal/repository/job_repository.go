@@ -22,7 +22,11 @@ type JobRepository interface {
 
 	FindCustomerJobs(ctx context.Context, customerID bson.ObjectID) ([]*models.Job, error)
 
+	UpdateStatus(ctx context.Context, jobID bson.ObjectID, status models.JobStatus) error
+
 	FindByJobNumber(ctx context.Context, jobNumber string) (*models.Job, error)
+
+	FindByStatuses(ctx context.Context, statuses []models.JobStatus) ([]*models.Job, error)
 
 	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device
 

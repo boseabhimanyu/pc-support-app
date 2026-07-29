@@ -146,3 +146,82 @@ func (h *JobHandler) GetCustomerJobs(c *gin.Context) {
 
 	c.JSON(http.StatusOK, jobs)
 }
+
+func (h *JobHandler) ChangeJobStatus(c *gin.Context) {
+
+	jobID := c.Param("jobId")
+	userID := c.GetString("userID")
+
+	var req dto.UpdateJobStatusRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	job, err := h.jobService.ChangeJobStatus(
+		c.Request.Context(),
+		jobID,
+		userID,
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, job)
+}
+
+func (h *JobHandler) GetInProgressJobs(c *gin.Context) {
+
+	jobs, err := h.jobService.GetInProgressJobs(
+		c.Request.Context(),
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobs)
+}
+
+func (h *JobHandler) GetWaitingCustomerJobs(c *gin.Context) {
+
+	jobs, err := h.jobService.GetWaitingCustomerJobs(
+		c.Request.Context(),
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobs)
+}
+
+func (h *JobHandler) GetResumedJobs(c *gin.Context) {
+
+	jobs, err := h.jobService.GetResumedJobs(
+		c.Request.Context(),
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobs)
+}

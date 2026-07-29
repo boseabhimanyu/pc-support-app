@@ -227,6 +227,33 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					jobHandler.GetOpenJobs,
 				)
+				jobs.GET(
+					"/in-progress",
+					auth.RequireRoles(
+						string(models.RoleHeadTechnician),
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					jobHandler.GetInProgressJobs,
+				)
+				jobs.GET(
+					"/waiting-customer",
+					auth.RequireRoles(
+						string(models.RoleHeadTechnician),
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					jobHandler.GetWaitingCustomerJobs,
+				)
+				jobs.GET(
+					"/resumed",
+					auth.RequireRoles(
+						string(models.RoleHeadTechnician),
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					jobHandler.GetResumedJobs,
+				)
 				jobs.PATCH(
 					"/:jobId/assign",
 					auth.RequireRoles(
@@ -252,6 +279,14 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 						string(models.RoleHeadTechnician),
 					),
 					jobHandler.GetMyJobs,
+				)
+				jobs.PATCH(
+					"/:jobId/status",
+					auth.RequireRoles(
+						string(models.RoleTechnician),
+						string(models.RoleHeadTechnician),
+					),
+					jobHandler.ChangeJobStatus,
 				)
 
 			}

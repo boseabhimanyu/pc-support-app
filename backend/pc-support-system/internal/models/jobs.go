@@ -78,3 +78,14 @@ type JobNote struct {
 
 	CreatedAt time.Time `bson:"created_at" json:"createdAt"`
 }
+
+type JobCloseReason string
+
+const (
+	JobCompleted          JobCloseReason = "completed"
+	JobNotRepairable      JobCloseReason = "not_repairable"
+	JobCustomerCancelled  JobCloseReason = "customer_cancelled"
+	JobCustomerNoResponse JobCloseReason = "customer_no_response"
+	JobDuplicateJob       JobCloseReason = "duplicate_job"
+	JobWrongSerial        JobCloseReason = "wrong_serial"
+)

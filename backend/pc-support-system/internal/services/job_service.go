@@ -147,7 +147,13 @@ func (s *JobService) GetOpenJobs(
 	ctx context.Context,
 ) (*dto.OpenJobsResponse, error) {
 
-	jobs, err := s.jobRepo.FindOpenUnassigned(ctx)
+	jobs, err := s.jobRepo.FindByStatuses(
+		ctx,
+		[]models.JobStatus{
+			models.JobCreated,
+		},
+	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +180,13 @@ func (s *JobService) GetAssignedJobs(
 	ctx context.Context,
 ) (*dto.AssignedJobsResponse, error) {
 
-	jobs, err := s.jobRepo.FindOpenAssigned(ctx)
+	jobs, err := s.jobRepo.FindByStatuses(
+		ctx,
+		[]models.JobStatus{
+			models.JobAssigned,
+		},
+	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -194,6 +206,70 @@ func (s *JobService) GetAssignedJobs(
 	return &dto.AssignedJobsResponse{
 		AssisgnedJobsCount: len(resp),
 		Jobs:               resp,
+	}, nil
+}
+
+func (s *JobService) GetInProgressJobs(
+	ctx context.Context,
+) (*dto.JobQueueResponse, error) {
+
+	jobs, err := s.jobRepo.FindByStatuses(
+		ctx,
+		[]models.JobStatus{
+			models.JobInProgress,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		jobResp, err := s.buildJobResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, *jobResp)
+	}
+
+	return &dto.JobQueueResponse{
+		JobsCount: len(resp),
+		Jobs:      resp,
+	}, nil
+}
+
+func (s *JobService) GetWaitingCustomerJobs(
+	ctx context.Context,
+) (*dto.JobQueueResponse, error) {
+
+	jobs, err := s.jobRepo.FindByStatuses(
+		ctx,
+		[]models.JobStatus{
+			models.JobWaitingCustomer,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		jobResp, err := s.buildJobResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, *jobResp)
+	}
+
+	return &dto.JobQueueResponse{
+		JobsCount: len(resp),
+		Jobs:      resp,
 	}, nil
 }
 
@@ -285,10 +361,8 @@ func (s *JobService) AssignJob(
 	job.AssignedToID = &staff.ID
 	job.AssignedByID = &assigner.ID
 
-	if job.Status == models.JobCreated {
-		job.Status = models.JobAssigned
-	}
-
+	// Every assignment resets the workflow
+	job.Status = models.JobAssigned
 	job.UpdatedAt = time.Now()
 
 	if err := s.jobRepo.AssignJob(ctx, job); err != nil {
@@ -442,6 +516,145 @@ func (s *JobService) GetCustomerJobs(
 	}
 
 	return &dto.CustomerJobsResponse{
+		JobsCount: len(resp),
+		Jobs:      resp,
+	}, nil
+}
+
+func (s *JobService) ChangeJobStatus(
+	ctx context.Context,
+	jobID string,
+	userID string,
+	req dto.UpdateJobStatusRequest,
+) (*dto.JobResponse, error) {
+
+	jobObjectID, err := bson.ObjectIDFromHex(jobID)
+	if err != nil {
+		return nil, errors.New("invalid job")
+	}
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	job, err := s.jobRepo.FindByID(ctx, jobObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if job == nil {
+		return nil, errors.New("job not found")
+	}
+
+	staff, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if staff == nil {
+		return nil, errors.New("user not found")
+	}
+
+	switch staff.Role {
+	case models.RoleTechnician,
+		models.RoleHeadTechnician:
+		// allowed
+	default:
+		return nil, errors.New("user cannot update job status")
+	}
+
+	if staff.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	if job.AssignedToID == nil {
+		return nil, errors.New("job is not assigned")
+	}
+
+	if *job.AssignedToID != staff.ID {
+		return nil, errors.New("job is not assigned to you")
+	}
+
+	if job.Status == models.JobClosed {
+		return nil, errors.New("closed jobs cannot be updated")
+	}
+
+	if !req.Status.IsValid() {
+		return nil, errors.New("invalid job status")
+	}
+
+	switch job.Status {
+
+	case models.JobAssigned:
+		if req.Status != models.JobInProgress {
+			return nil, errors.New("assigned jobs can only move to in progress")
+		}
+
+	case models.JobInProgress:
+		if req.Status != models.JobWaitingCustomer &&
+			req.Status != models.JobClosed {
+			return nil, errors.New("invalid status transition")
+		}
+
+	case models.JobWaitingCustomer:
+		if req.Status != models.JobResumed &&
+			req.Status != models.JobClosed {
+			return nil, errors.New("invalid status transition")
+		}
+
+	case models.JobResumed:
+		if req.Status != models.JobWaitingCustomer &&
+			req.Status != models.JobClosed {
+			return nil, errors.New("invalid status transition")
+		}
+
+	default:
+		return nil, errors.New("invalid current job status")
+	}
+
+	err = s.jobRepo.UpdateStatus(
+		ctx,
+		job.ID,
+		req.Status,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	job.Status = req.Status
+	job.UpdatedAt = time.Now()
+
+	return s.buildJobResponse(ctx, job)
+}
+
+func (s *JobService) GetResumedJobs(
+	ctx context.Context,
+) (*dto.JobQueueResponse, error) {
+
+	jobs, err := s.jobRepo.FindByStatuses(
+		ctx,
+		[]models.JobStatus{
+			models.JobResumed,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		jobResp, err := s.buildJobResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, *jobResp)
+	}
+
+	return &dto.JobQueueResponse{
 		JobsCount: len(resp),
 		Jobs:      resp,
 	}, nil

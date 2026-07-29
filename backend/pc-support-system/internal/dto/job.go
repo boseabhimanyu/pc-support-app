@@ -101,3 +101,17 @@ type CustomerJobsResponse struct {
 	JobsCount int           `json:"jobsCount"`
 	Jobs      []JobResponse `json:"jobs"`
 }
+
+type UpdateJobStatusRequest struct {
+	Status models.JobStatus `json:"status" binding:"required"`
+}
+
+// type UpdateJobStatusRequest struct {
+//     Status      models.JobStatus       `json:"status"`
+//     CloseReason *models.JobCloseReason `json:"closeReason,omitempty"`
+// }
+
+type JobQueueResponse struct {
+	JobsCount int           `json:"jobsCount"`
+	Jobs      []JobResponse `json:"jobs"`
+}
