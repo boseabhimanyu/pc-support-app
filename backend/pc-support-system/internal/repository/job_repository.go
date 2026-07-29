@@ -10,13 +10,15 @@ import (
 type JobRepository interface {
 	Create(ctx context.Context, job *models.Job) error
 
-	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device
 	FindOpenUnassigned(ctx context.Context) ([]*models.Job, error)
+	FindOpenAssigned(ctx context.Context) ([]*models.Job, error)
+	AssignJob(ctx context.Context, job *models.Job) error
 
 	FindByID(ctx context.Context, id bson.ObjectID) (*models.Job, error)
 
 	FindByJobNumber(ctx context.Context, jobNumber string) (*models.Job, error)
 
+	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device
 	//FindByStatus(ctx context.Context, status models.JobStatus) ([]models.Job, error)
 
 	GenerateJobNumber(ctx context.Context) (string, error)

@@ -13,6 +13,7 @@ const (
 	JobAssigned        JobStatus = "assigned"
 	JobInProgress      JobStatus = "in_progress"
 	JobWaitingCustomer JobStatus = "waiting_customer"
+	JobResumed         JobStatus = "resumed"
 	JobClosed          JobStatus = "closed"
 )
 
@@ -22,6 +23,7 @@ func (s JobStatus) IsValid() bool {
 		JobAssigned,
 		JobInProgress,
 		JobWaitingCustomer,
+		JobResumed,
 		JobClosed:
 		return true
 	default:

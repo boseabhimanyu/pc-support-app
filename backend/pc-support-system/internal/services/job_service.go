@@ -96,6 +96,7 @@ func (s *JobService) CreateJob(
 
 	switch creator.Role {
 	case models.RoleReceptionist,
+		models.RoleHeadTechnician,
 		models.RoleAdmin,
 		models.RoleSuperAdmin:
 		// allowed
@@ -139,37 +140,7 @@ func (s *JobService) CreateJob(
 		return nil, err
 	}
 
-	resp := dto.JobResponse{
-		ID:        job.ID.Hex(),
-		JobNumber: job.JobNumber,
-		Status:    job.Status,
-
-		ProblemDescription: job.ProblemDescription,
-		CreatedAt:          job.CreatedAt,
-
-		Customer: dto.CustomerSummary{
-			ID:        customer.ID.Hex(),
-			FirstName: customer.FirstName,
-			LastName:  customer.LastName,
-			Phone:     customer.Phone,
-		},
-
-		Device: dto.DeviceSummary{
-			ID:    device.ID.Hex(),
-			Type:  device.Type,
-			Brand: device.Brand,
-			Model: device.Model,
-		},
-
-		CreatedBy: dto.UserSummary{
-			ID:        creator.ID.Hex(),
-			FirstName: creator.FirstName,
-			LastName:  creator.LastName,
-			Role:      creator.Role,
-		},
-	}
-
-	return &resp, nil
+	return s.buildJobResponse(ctx, job)
 }
 
 func (s *JobService) GetOpenJobs(
@@ -185,21 +156,189 @@ func (s *JobService) GetOpenJobs(
 
 	for _, job := range jobs {
 
-		customer, _ := s.userRepo.FindByID(ctx, job.CustomerID)
-		device, _ := s.deviceRepo.FindByID(ctx, job.DeviceID)
-		creator, _ := s.userRepo.FindByID(ctx, job.CreatedByID)
+		jobResp, err := s.buildJobResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
 
-		resp = append(resp, dto.ToJobResponse(
-			job,
-			dto.ToCustomerSummary(customer),
-			dto.ToDeviceSummary(device),
-			dto.ToUserSummary(creator),
-			nil,
-		))
+		resp = append(resp, *jobResp)
 	}
 
 	return &dto.OpenJobsResponse{
 		OpenJobsCount: len(resp),
 		Jobs:          resp,
 	}, nil
+}
+
+func (s *JobService) GetAssignedJobs(
+	ctx context.Context,
+) (*dto.AssignedJobsResponse, error) {
+
+	jobs, err := s.jobRepo.FindOpenAssigned(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		jobResp, err := s.buildJobResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, *jobResp)
+	}
+
+	return &dto.AssignedJobsResponse{
+		AssisgnedJobsCount: len(resp),
+		Jobs:               resp,
+	}, nil
+}
+
+func (s *JobService) AssignJob(
+	ctx context.Context,
+	jobID string,
+	assignedBy string,
+	req dto.AssignJobRequest,
+) (*dto.JobResponse, error) {
+
+	// Job ID
+	jobObjectID, err := bson.ObjectIDFromHex(jobID)
+	if err != nil {
+		return nil, errors.New("invalid job id")
+	}
+
+	// Assignee ID
+	staffObjectID, err := bson.ObjectIDFromHex(req.StaffID)
+	if err != nil {
+		return nil, errors.New("invalid staff id")
+	}
+
+	// Assigner ID
+	assignedByID, err := bson.ObjectIDFromHex(assignedBy)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	// Job
+	job, err := s.jobRepo.FindByID(ctx, jobObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if job == nil {
+		return nil, errors.New("job not found")
+	}
+
+	if job.Status == models.JobClosed {
+		return nil, errors.New("closed jobs cannot be assigned")
+	}
+
+	// Assignee
+	staff, err := s.userRepo.FindByID(ctx, staffObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if staff == nil {
+		return nil, errors.New("staff not found")
+	}
+
+	if staff.State != models.UserActive {
+		return nil, errors.New("staff account is inactive")
+	}
+
+	switch staff.Role {
+	case models.RoleTechnician,
+		models.RoleHeadTechnician:
+		// valid
+	default:
+		return nil, errors.New("invalid staff role")
+	}
+
+	// Assigner
+	assigner, err := s.userRepo.FindByID(ctx, assignedByID)
+	if err != nil {
+		return nil, err
+	}
+
+	if assigner == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if assigner.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch assigner.Role {
+	case models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+	default:
+		return nil, errors.New("user cannot assign jobs")
+	}
+
+	// Assignment
+	job.AssignedToID = &staff.ID
+	job.AssignedByID = &assigner.ID
+
+	if job.Status == models.JobCreated {
+		job.Status = models.JobAssigned
+	}
+
+	job.UpdatedAt = time.Now()
+
+	if err := s.jobRepo.AssignJob(ctx, job); err != nil {
+		return nil, err
+	}
+
+	return s.buildJobResponse(ctx, job)
+}
+
+func (s *JobService) buildJobResponse(
+	ctx context.Context,
+	job *models.Job,
+) (*dto.JobResponse, error) {
+
+	customer, err := s.userRepo.FindByID(ctx, job.CustomerID)
+	if err != nil {
+		return nil, err
+	}
+
+	device, err := s.deviceRepo.FindByID(ctx, job.DeviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	createdBy, err := s.userRepo.FindByID(ctx, job.CreatedByID)
+	if err != nil {
+		return nil, err
+	}
+
+	var assignedTo *dto.UserSummary
+
+	if job.AssignedToID != nil {
+		user, err := s.userRepo.FindByID(ctx, *job.AssignedToID)
+		if err != nil {
+			return nil, err
+		}
+
+		if user != nil {
+			summary := dto.ToUserSummary(user)
+			assignedTo = &summary
+		}
+	}
+
+	resp := dto.ToJobResponse(
+		job,
+		dto.ToCustomerSummary(customer),
+		dto.ToDeviceSummary(device),
+		dto.ToUserSummary(createdBy),
+		assignedTo,
+	)
+
+	return &resp, nil
 }

@@ -211,6 +211,24 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					jobHandler.GetOpenJobs,
 				)
+				jobs.PATCH(
+					"/:jobId/assign",
+					auth.RequireRoles(
+						string(models.RoleHeadTechnician),
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					jobHandler.AssignJob,
+				)
+				jobs.GET(
+					"/assigned",
+					auth.RequireRoles(
+						string(models.RoleHeadTechnician),
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					jobHandler.GetAssignedJobs,
+				)
 
 			}
 		}

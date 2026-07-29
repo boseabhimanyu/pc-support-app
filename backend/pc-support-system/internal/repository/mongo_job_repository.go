@@ -143,3 +143,59 @@ func (r *MongoJobRepository) FindOpenUnassigned(
 
 	return jobs, nil
 }
+
+func (r *MongoJobRepository) AssignJob(
+	ctx context.Context,
+	job *models.Job,
+) error {
+
+	filter := bson.M{
+		"_id": job.ID,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"assigned_to_id": job.AssignedToID,
+			"assigned_by_id": job.AssignedByID,
+			"status":         job.Status,
+			"updated_at":     job.UpdatedAt,
+		},
+	}
+
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+
+	return err
+}
+
+func (r *MongoJobRepository) FindOpenAssigned(
+	ctx context.Context,
+) ([]*models.Job, error) {
+
+	filter := bson.M{
+		"status":         models.JobAssigned,
+		"assigned_to_id": bson.M{"$exists": true},
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{
+			{Key: "created_at", Value: 1},
+		})
+
+	cursor, err := r.collection.Find(
+		ctx,
+		filter,
+		opts,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var jobs []*models.Job
+
+	if err := cursor.All(ctx, &jobs); err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}

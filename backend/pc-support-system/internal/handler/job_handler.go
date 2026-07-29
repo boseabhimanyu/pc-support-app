@@ -60,3 +60,51 @@ func (h *JobHandler) GetOpenJobs(c *gin.Context) {
 
 	c.JSON(http.StatusOK, jobs)
 }
+
+func (h *JobHandler) AssignJob(c *gin.Context) {
+
+	jobID := c.Param("jobId")
+
+	var req dto.AssignJobRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	assignedBy := c.GetString("userID")
+
+	job, err := h.jobService.AssignJob(
+		c.Request.Context(),
+		jobID,
+		assignedBy,
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, job)
+}
+
+func (h *JobHandler) GetAssignedJobs(c *gin.Context) {
+
+	jobs, err := h.jobService.GetAssignedJobs(
+		c.Request.Context(),
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobs)
+}

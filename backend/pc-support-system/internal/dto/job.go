@@ -81,3 +81,13 @@ type OpenJobsResponse struct {
 	OpenJobsCount int           `json:"openJobsCount"`
 	Jobs          []JobResponse `json:"jobs"`
 }
+
+type AssignJobRequest struct {
+	StaffID string `json:"staffId" binding:"required"`
+	//Note    string `json:"note"`
+}
+
+type AssignedJobsResponse struct {
+	AssisgnedJobsCount int           `json:"assignedJobsCount"`
+	Jobs               []JobResponse `json:"jobs"`
+}
