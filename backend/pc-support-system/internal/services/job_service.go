@@ -746,3 +746,87 @@ func (s *JobService) AddJobNote(
 		note,
 	)
 }
+
+func (s *JobService) GetJobNotes(
+	ctx context.Context,
+	jobID string,
+	userID string,
+) (*dto.JobNotesResponse, error) {
+
+	jobObjectID, err := bson.ObjectIDFromHex(jobID)
+	if err != nil {
+		return nil, errors.New("invalid job id")
+	}
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	job, err := s.jobRepo.FindByID(ctx, jobObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if job == nil {
+		return nil, errors.New("job not found")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	switch user.Role {
+
+	case models.RoleReceptionist,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+
+		// Can view all jobs
+
+	case models.RoleHeadTechnician:
+
+		// Can view all jobs
+
+	case models.RoleTechnician:
+
+		if job.AssignedToID == nil || *job.AssignedToID != user.ID {
+			return nil, errors.New("access denied")
+		}
+
+	case models.RoleCustomer:
+
+		if job.CustomerID != user.ID {
+			return nil, errors.New("access denied")
+		}
+
+	default:
+		return nil, errors.New("access denied")
+	}
+
+	resp := make([]dto.JobNoteResponse, 0, len(job.Notes))
+
+	for _, note := range job.Notes {
+
+		author, _ := s.userRepo.FindByID(ctx, note.AuthorID)
+
+		if author == nil {
+			continue
+		}
+
+		resp = append(resp, dto.ToJobNoteResponse(
+			note,
+			author,
+		))
+	}
+
+	return &dto.JobNotesResponse{
+		NotesCount: len(resp),
+		Notes:      resp,
+	}, nil
+}

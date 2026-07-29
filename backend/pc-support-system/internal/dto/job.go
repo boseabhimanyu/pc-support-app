@@ -116,14 +116,8 @@ type JobQueueResponse struct {
 	Jobs      []JobResponse `json:"jobs"`
 }
 
-type JobNoteResponse struct {
-	ID string `json:"id"`
-
-	Author UserSummary `json:"author"`
-
-	Note string `json:"note"`
-
-	CreatedAt time.Time `json:"createdAt"`
+type AddJobNoteRequest struct {
+	Note string `json:"note" binding:"required"`
 }
 
 type JobNotesResponse struct {
@@ -131,6 +125,27 @@ type JobNotesResponse struct {
 	Notes      []JobNoteResponse `json:"notes"`
 }
 
-type AddJobNoteRequest struct {
-	Note string `json:"note" binding:"required"`
+type JobNoteResponse struct {
+	ID        string      `json:"id"`
+	Author    UserSummary `json:"author"`
+	Note      string      `json:"note"`
+	CreatedAt time.Time   `json:"createdAt"`
+}
+
+func ToJobNoteResponse(
+	note models.JobNote,
+	author *models.User,
+) JobNoteResponse {
+
+	return JobNoteResponse{
+		ID: note.ID.Hex(),
+		Author: UserSummary{
+			ID:        author.ID.Hex(),
+			FirstName: author.FirstName,
+			LastName:  author.LastName,
+			Role:      note.AuthorRole, // historical role
+		},
+		Note:      note.Note,
+		CreatedAt: note.CreatedAt,
+	}
 }

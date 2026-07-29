@@ -257,3 +257,24 @@ func (h *JobHandler) AddJobNote(c *gin.Context) {
 		"message": "job note added successfully",
 	})
 }
+
+func (h *JobHandler) GetJobNotes(c *gin.Context) {
+
+	jobID := c.Param("jobId")
+	userID := c.GetString("userID")
+
+	notes, err := h.jobService.GetJobNotes(
+		c.Request.Context(),
+		jobID,
+		userID,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, notes)
+}

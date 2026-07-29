@@ -297,6 +297,10 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					),
 					jobHandler.AddJobNote,
 				)
+				jobs.GET(
+					"/:jobId/notes",
+					jobHandler.GetJobNotes,
+				)
 
 			}
 		}
