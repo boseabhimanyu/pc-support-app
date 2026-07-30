@@ -460,6 +460,21 @@ func (s *JobService) buildJobResponse(
 		}
 	}
 
+	notes := make([]dto.JobNoteResponse, 0, len(job.Notes))
+
+	for _, note := range job.Notes {
+
+		author, err := s.userRepo.FindByID(ctx, note.AuthorID)
+		if err != nil || author == nil {
+			continue
+		}
+
+		notes = append(notes, dto.ToJobNoteResponse(
+			note,
+			author,
+		))
+	}
+
 	resp := dto.ToJobResponse(
 		job,
 		dto.ToCustomerSummary(customer),
@@ -467,6 +482,7 @@ func (s *JobService) buildJobResponse(
 		dto.ToUserSummary(createdBy),
 		assignedTo,
 	)
+	resp.Notes = notes
 
 	return &resp, nil
 }
@@ -829,4 +845,64 @@ func (s *JobService) GetJobNotes(
 		NotesCount: len(resp),
 		Notes:      resp,
 	}, nil
+}
+
+func (s *JobService) GetJobByID(
+	ctx context.Context,
+	jobID string,
+	userID string,
+) (*dto.JobResponse, error) {
+
+	jobObjectID, err := bson.ObjectIDFromHex(jobID)
+	if err != nil {
+		return nil, errors.New("invalid job id")
+	}
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	job, err := s.jobRepo.FindByID(ctx, jobObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if job == nil {
+		return nil, errors.New("job not found")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if user.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch user.Role {
+
+	case models.RoleReceptionist,
+		models.RoleTechnician,
+		models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// Staff can view any job.
+
+	case models.RoleCustomer:
+
+		if job.CustomerID != user.ID {
+			return nil, errors.New("access denied")
+		}
+
+	default:
+		return nil, errors.New("access denied")
+	}
+
+	return s.buildJobResponse(ctx, job)
 }

@@ -24,6 +24,8 @@ type JobResponse struct {
 
 	ProblemDescription string `json:"problemDescription"`
 
+	Notes []JobNoteResponse `json:"notes,omitempty"`
+
 	CreatedAt time.Time `json:"createdAt"`
 
 	CreatedBy UserSummary `json:"createdBy"`
