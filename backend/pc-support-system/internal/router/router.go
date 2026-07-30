@@ -78,6 +78,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					string(models.RoleReceptionist),
 					string(models.RoleAdmin),
 					string(models.RoleSuperAdmin),
+					string(models.RoleHeadTechnician),
 				),
 				deviceHandler.AddDevice,
 			)
@@ -207,6 +208,10 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 			}
 			jobs := protected.Group("/jobs")
 			{
+				jobs.GET(
+					"/customer/:customerId/",
+					jobHandler.GetCustomerJobsByCustomerID,
+				)
 				jobs.POST(
 					"",
 					auth.RequireRoles(

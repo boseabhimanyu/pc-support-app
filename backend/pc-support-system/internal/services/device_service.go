@@ -29,8 +29,38 @@ type DeviceService struct {
 
 func (s *DeviceService) AddDevice(
 	ctx context.Context,
+	userID string,
 	req dto.AddDeviceRequest,
 ) (*dto.DeviceResponse, error) {
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	staff, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if staff == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if staff.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch staff.Role {
+	case models.RoleReceptionist,
+		models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+
+	default:
+		return nil, errors.New("user cannot add devices")
+	}
 
 	// Convert CustomerID to ObjectID
 	customerID, err := bson.ObjectIDFromHex(req.CustomerID)

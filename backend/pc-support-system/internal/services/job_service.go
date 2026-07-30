@@ -920,3 +920,86 @@ func (s *JobService) buildJobDetailsResponse(
 
 	return resp, nil
 }
+
+func (s *JobService) GetCustomerJobsByCustomerID(
+	ctx context.Context,
+	customerID string,
+	userID string,
+) (*dto.CustomerJobsResponse, error) {
+
+	customerObjectID, err := bson.ObjectIDFromHex(customerID)
+	if err != nil {
+		return nil, errors.New("invalid customer id")
+	}
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if user.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch user.Role {
+	case models.RoleReceptionist,
+		models.RoleTechnician,
+		models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+
+	default:
+		return nil, errors.New("user cannot view customer jobs")
+	}
+
+	customer, err := s.userRepo.FindByID(ctx, customerObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if customer == nil {
+		return nil, errors.New("customer not found")
+	}
+
+	if customer.Role != models.RoleCustomer {
+		return nil, errors.New("invalid customer")
+	}
+
+	jobs, err := s.jobRepo.FindCustomerJobs(
+		ctx,
+		customerObjectID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		jobResp, err := s.buildJobSummaryResponse(
+			ctx,
+			job,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, *jobResp)
+	}
+
+	return &dto.CustomerJobsResponse{
+		JobsCount: len(resp),
+		Jobs:      resp,
+	}, nil
+}

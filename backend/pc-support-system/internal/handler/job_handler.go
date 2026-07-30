@@ -299,3 +299,24 @@ func (h *JobHandler) GetJobByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, job)
 }
+
+func (h *JobHandler) GetCustomerJobsByCustomerID(c *gin.Context) {
+
+	customerID := c.Param("customerId")
+	userID := c.GetString("userID")
+
+	jobs, err := h.jobService.GetCustomerJobsByCustomerID(
+		c.Request.Context(),
+		customerID,
+		userID,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, jobs)
+}

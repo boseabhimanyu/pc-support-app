@@ -31,6 +31,7 @@ func (h *DeviceHandler) AddDevice(c *gin.Context) {
 
 	device, err := h.deviceService.AddDevice(
 		c.Request.Context(),
+		c.GetString("userID"),
 		req,
 	)
 
