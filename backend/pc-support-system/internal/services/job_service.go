@@ -140,7 +140,7 @@ func (s *JobService) CreateJob(
 		return nil, err
 	}
 
-	return s.buildJobResponse(ctx, job)
+	return s.buildJobSummaryResponse(ctx, job)
 }
 
 func (s *JobService) GetOpenJobs(
@@ -162,7 +162,7 @@ func (s *JobService) GetOpenJobs(
 
 	for _, job := range jobs {
 
-		jobResp, err := s.buildJobResponse(ctx, job)
+		jobResp, err := s.buildJobSummaryResponse(ctx, job)
 		if err != nil {
 			return nil, err
 		}
@@ -195,7 +195,7 @@ func (s *JobService) GetAssignedJobs(
 
 	for _, job := range jobs {
 
-		jobResp, err := s.buildJobResponse(ctx, job)
+		jobResp, err := s.buildJobSummaryResponse(ctx, job)
 		if err != nil {
 			return nil, err
 		}
@@ -227,7 +227,7 @@ func (s *JobService) GetInProgressJobs(
 
 	for _, job := range jobs {
 
-		jobResp, err := s.buildJobResponse(ctx, job)
+		jobResp, err := s.buildJobSummaryResponse(ctx, job)
 		if err != nil {
 			return nil, err
 		}
@@ -259,7 +259,7 @@ func (s *JobService) GetWaitingCustomerJobs(
 
 	for _, job := range jobs {
 
-		jobResp, err := s.buildJobResponse(ctx, job)
+		jobResp, err := s.buildJobSummaryResponse(ctx, job)
 		if err != nil {
 			return nil, err
 		}
@@ -369,7 +369,7 @@ func (s *JobService) AssignJob(
 		return nil, err
 	}
 
-	return s.buildJobResponse(ctx, job)
+	return s.buildJobSummaryResponse(ctx, job)
 }
 
 func (s *JobService) GetMyJobs(
@@ -412,7 +412,7 @@ func (s *JobService) GetMyJobs(
 
 	for _, job := range jobs {
 
-		jobResp, err := s.buildJobResponse(ctx, job)
+		jobResp, err := s.buildJobSummaryResponse(ctx, job)
 		if err != nil {
 			return nil, err
 		}
@@ -426,7 +426,7 @@ func (s *JobService) GetMyJobs(
 	}, nil
 }
 
-func (s *JobService) buildJobResponse(
+func (s *JobService) buildJobSummaryResponse(
 	ctx context.Context,
 	job *models.Job,
 ) (*dto.JobResponse, error) {
@@ -460,21 +460,6 @@ func (s *JobService) buildJobResponse(
 		}
 	}
 
-	notes := make([]dto.JobNoteResponse, 0, len(job.Notes))
-
-	for _, note := range job.Notes {
-
-		author, err := s.userRepo.FindByID(ctx, note.AuthorID)
-		if err != nil || author == nil {
-			continue
-		}
-
-		notes = append(notes, dto.ToJobNoteResponse(
-			note,
-			author,
-		))
-	}
-
 	resp := dto.ToJobResponse(
 		job,
 		dto.ToCustomerSummary(customer),
@@ -482,7 +467,6 @@ func (s *JobService) buildJobResponse(
 		dto.ToUserSummary(createdBy),
 		assignedTo,
 	)
-	resp.Notes = notes
 
 	return &resp, nil
 }
@@ -523,7 +507,7 @@ func (s *JobService) GetCustomerJobs(
 
 	for _, job := range jobs {
 
-		jobResp, err := s.buildJobResponse(ctx, job)
+		jobResp, err := s.buildJobSummaryResponse(ctx, job)
 		if err != nil {
 			return nil, err
 		}
@@ -641,7 +625,7 @@ func (s *JobService) ChangeJobStatus(
 	job.Status = req.Status
 	job.UpdatedAt = time.Now()
 
-	return s.buildJobResponse(ctx, job)
+	return s.buildJobSummaryResponse(ctx, job)
 }
 
 func (s *JobService) GetResumedJobs(
@@ -662,7 +646,7 @@ func (s *JobService) GetResumedJobs(
 
 	for _, job := range jobs {
 
-		jobResp, err := s.buildJobResponse(ctx, job)
+		jobResp, err := s.buildJobSummaryResponse(ctx, job)
 		if err != nil {
 			return nil, err
 		}
@@ -904,5 +888,35 @@ func (s *JobService) GetJobByID(
 		return nil, errors.New("access denied")
 	}
 
-	return s.buildJobResponse(ctx, job)
+	return s.buildJobDetailsResponse(ctx, job)
+}
+
+func (s *JobService) buildJobDetailsResponse(
+	ctx context.Context,
+	job *models.Job,
+) (*dto.JobResponse, error) {
+
+	resp, err := s.buildJobSummaryResponse(ctx, job)
+	if err != nil {
+		return nil, err
+	}
+
+	notes := make([]dto.JobNoteResponse, 0, len(job.Notes))
+
+	for _, note := range job.Notes {
+
+		author, err := s.userRepo.FindByID(ctx, note.AuthorID)
+		if err != nil || author == nil {
+			continue
+		}
+
+		notes = append(notes, dto.ToJobNoteResponse(
+			note,
+			author,
+		))
+	}
+
+	resp.Notes = notes
+
+	return resp, nil
 }
