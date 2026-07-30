@@ -31,6 +31,11 @@ type JobResponse struct {
 	CreatedBy UserSummary `json:"createdBy"`
 
 	AssignedTo *UserSummary `json:"assignedTo,omitempty"`
+
+	CloseReason          models.JobCloseReason `json:"closeReason,omitempty"`
+	ClosureNotes         string                `json:"closureNotes,omitempty"`
+	ClosedAt             *time.Time            `json:"closedAt,omitempty"`
+	InternalClosureNotes string                `json:"internalClosureNotes,omitempty"`
 }
 
 type DeviceSummary struct {
@@ -67,6 +72,11 @@ func ToJobResponse(
 		CreatedAt:          job.CreatedAt,
 		CreatedBy:          createdBy,
 		AssignedTo:         assignedTo,
+
+		CloseReason:          job.CloseReason,
+		ClosureNotes:         job.ClosureNotes,
+		InternalClosureNotes: job.InternalClosureNotes,
+		ClosedAt:             job.ClosedAt,
 	}
 }
 
@@ -108,11 +118,6 @@ type UpdateJobStatusRequest struct {
 	Status models.JobStatus `json:"status" binding:"required"`
 }
 
-// type UpdateJobStatusRequest struct {
-//     Status      models.JobStatus       `json:"status"`
-//     CloseReason *models.JobCloseReason `json:"closeReason,omitempty"`
-// }
-
 type JobQueueResponse struct {
 	JobsCount int           `json:"jobsCount"`
 	Jobs      []JobResponse `json:"jobs"`
@@ -150,4 +155,10 @@ func ToJobNoteResponse(
 		Note:      note.Note,
 		CreatedAt: note.CreatedAt,
 	}
+}
+
+type CloseJobRequest struct {
+	Reason               models.JobCloseReason `json:"reason" binding:"required"`
+	ClosureNotes         string                `json:"closureNotes"`
+	InternalClosureNotes string                `json:"internalClosureNotes"`
 }

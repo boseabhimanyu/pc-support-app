@@ -47,8 +47,14 @@ type Job struct {
 	// Original customer complaint (immutable)
 	ProblemDescription string `bson:"problem_description" json:"problemDescription"`
 
-	// Assigned when closing
+	// Closure
+	CloseReason JobCloseReason `bson:"close_reason,omitempty" json:"closeReason,omitempty"`
+
+	// Visible to customer
 	ClosureNotes string `bson:"closure_notes,omitempty" json:"closureNotes,omitempty"`
+
+	// Internal staff only
+	InternalClosureNotes string `bson:"internal_closure_notes,omitempty" json:"-"`
 
 	// Staff
 	CreatedByID bson.ObjectID `bson:"created_by_id" json:"createdById"`
@@ -89,3 +95,17 @@ const (
 	JobDuplicateJob       JobCloseReason = "duplicate_job"
 	JobWrongSerial        JobCloseReason = "wrong_serial"
 )
+
+func (r JobCloseReason) IsValid() bool {
+	switch r {
+	case JobCompleted,
+		JobNotRepairable,
+		JobCustomerCancelled,
+		JobCustomerNoResponse,
+		JobDuplicateJob,
+		JobWrongSerial:
+		return true
+	default:
+		return false
+	}
+}

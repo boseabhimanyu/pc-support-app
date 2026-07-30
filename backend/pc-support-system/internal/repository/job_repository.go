@@ -30,6 +30,8 @@ type JobRepository interface {
 
 	AddNote(ctx context.Context, jobID bson.ObjectID, note models.JobNote) error
 
+	CloseJob(ctx context.Context, job *models.Job) error
+
 	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device
 
 	GenerateJobNumber(ctx context.Context) (string, error)

@@ -352,3 +352,29 @@ func (r *MongoJobRepository) AddNote(
 
 	return err
 }
+
+func (r *MongoJobRepository) CloseJob(
+	ctx context.Context,
+	job *models.Job,
+) error {
+
+	update := bson.M{
+		"$set": bson.M{
+			"status":                 job.Status,
+			"close_reason":           job.CloseReason,
+			"closure_notes":          job.ClosureNotes,
+			"internal_closure_notes": job.InternalClosureNotes,
+			"closed_by_id":           job.ClosedByID,
+			"closed_at":              job.ClosedAt,
+			"updated_at":             job.UpdatedAt,
+		},
+	}
+
+	_, err := r.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": job.ID},
+		update,
+	)
+
+	return err
+}

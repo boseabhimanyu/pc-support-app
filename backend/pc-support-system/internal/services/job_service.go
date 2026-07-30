@@ -584,6 +584,10 @@ func (s *JobService) ChangeJobStatus(
 		return nil, errors.New("invalid job status")
 	}
 
+	if req.Status == models.JobClosed {
+		return nil, errors.New("jobs must be closed using the close endpoint")
+	}
+
 	switch job.Status {
 
 	case models.JobAssigned:
@@ -592,20 +596,17 @@ func (s *JobService) ChangeJobStatus(
 		}
 
 	case models.JobInProgress:
-		if req.Status != models.JobWaitingCustomer &&
-			req.Status != models.JobClosed {
+		if req.Status != models.JobWaitingCustomer {
 			return nil, errors.New("invalid status transition")
 		}
 
 	case models.JobWaitingCustomer:
-		if req.Status != models.JobResumed &&
-			req.Status != models.JobClosed {
+		if req.Status != models.JobResumed {
 			return nil, errors.New("invalid status transition")
 		}
 
 	case models.JobResumed:
-		if req.Status != models.JobWaitingCustomer &&
-			req.Status != models.JobClosed {
+		if req.Status != models.JobWaitingCustomer {
 			return nil, errors.New("invalid status transition")
 		}
 
@@ -888,7 +889,17 @@ func (s *JobService) GetJobByID(
 		return nil, errors.New("access denied")
 	}
 
-	return s.buildJobDetailsResponse(ctx, job)
+	resp, err := s.buildJobDetailsResponse(ctx, job)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Role == models.RoleCustomer {
+		resp.CloseReason = ""
+		resp.InternalClosureNotes = ""
+	}
+
+	return resp, nil
 }
 
 func (s *JobService) buildJobDetailsResponse(
@@ -1002,4 +1013,101 @@ func (s *JobService) GetCustomerJobsByCustomerID(
 		JobsCount: len(resp),
 		Jobs:      resp,
 	}, nil
+}
+
+func (s *JobService) CloseJob(
+	ctx context.Context,
+	jobID string,
+	userID string,
+	req dto.CloseJobRequest,
+) (*dto.JobResponse, error) {
+
+	jobObjectID, err := bson.ObjectIDFromHex(jobID)
+	if err != nil {
+		return nil, errors.New("invalid job id")
+	}
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	job, err := s.jobRepo.FindByID(ctx, jobObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if job == nil {
+		return nil, errors.New("job not found")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if user.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch user.Role {
+
+	case models.RoleTechnician,
+		models.RoleHeadTechnician:
+
+		// allowed
+
+	default:
+		return nil, errors.New("user cannot close jobs")
+	}
+
+	if job.AssignedToID == nil {
+		return nil, errors.New("job is not assigned")
+	}
+
+	if *job.AssignedToID != user.ID {
+		return nil, errors.New("job is not assigned to you")
+	}
+
+	if job.Status == models.JobClosed {
+		return nil, errors.New("job is already closed")
+	}
+
+	if job.Status != models.JobResumed {
+		return nil, errors.New("only resumed jobs can be closed")
+	}
+
+	if !req.Reason.IsValid() {
+		return nil, errors.New("invalid closure reason")
+	}
+
+	req.ClosureNotes = strings.TrimSpace(req.ClosureNotes)
+	req.InternalClosureNotes = strings.TrimSpace(req.InternalClosureNotes)
+
+	now := time.Now()
+
+	job.Status = models.JobClosed
+	job.CloseReason = req.Reason
+	job.ClosureNotes = req.ClosureNotes
+	job.InternalClosureNotes = req.InternalClosureNotes
+
+	job.ClosedByID = user.ID
+	job.ClosedAt = &now
+	job.UpdatedAt = now
+
+	if err := s.jobRepo.CloseJob(
+		ctx,
+		job,
+	); err != nil {
+		return nil, err
+	}
+
+	return s.buildJobDetailsResponse(
+		ctx,
+		job,
+	)
 }

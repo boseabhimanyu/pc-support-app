@@ -310,6 +310,10 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					"/:jobId",
 					jobHandler.GetJobByID,
 				)
+				jobs.POST(
+					"/:jobId/close",
+					jobHandler.CloseJob,
+				)
 
 			}
 		}

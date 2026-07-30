@@ -320,3 +320,33 @@ func (h *JobHandler) GetCustomerJobsByCustomerID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, jobs)
 }
+
+func (h *JobHandler) CloseJob(c *gin.Context) {
+
+	jobID := c.Param("jobId")
+
+	var req dto.CloseJobRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	job, err := h.jobService.CloseJob(
+		c.Request.Context(),
+		jobID,
+		c.GetString("userID"),
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, job)
+}
