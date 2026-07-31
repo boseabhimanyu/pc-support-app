@@ -376,6 +376,8 @@ func (s *JobService) AssignJob(
 	job.AssignedToID = &staff.ID
 	job.AssignedByID = &assigner.ID
 
+	oldStatus := job.Status
+
 	// Every assignment resets the workflow
 	job.Status = models.JobAssigned
 	job.UpdatedAt = time.Now()
@@ -383,6 +385,19 @@ func (s *JobService) AssignJob(
 	if err := s.jobRepo.AssignJob(ctx, job); err != nil {
 		return nil, err
 	}
+
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityJob,
+		job.ID,
+		models.AuditJobAssigned,
+		assigner.ID, // ✅ Head Tech/Admin who assigned it
+		bson.M{
+			"assignedTo": staff.ID.Hex(),
+			"from":       oldStatus,
+			"to":         job.Status,
+		},
+	)
 
 	return s.buildJobSummaryResponse(ctx, job)
 }
@@ -629,6 +644,8 @@ func (s *JobService) ChangeJobStatus(
 		return nil, errors.New("invalid current job status")
 	}
 
+	oldStatus := job.Status
+
 	err = s.jobRepo.UpdateStatus(
 		ctx,
 		job.ID,
@@ -640,6 +657,18 @@ func (s *JobService) ChangeJobStatus(
 
 	job.Status = req.Status
 	job.UpdatedAt = time.Now()
+
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityJob,
+		job.ID,
+		models.AuditJobStatusChanged,
+		staff.ID,
+		bson.M{
+			"from": oldStatus,
+			"to":   job.Status,
+		},
+	)
 
 	return s.buildJobSummaryResponse(ctx, job)
 }
@@ -756,11 +785,26 @@ func (s *JobService) AddJobNote(
 		CreatedAt:  time.Now(),
 	}
 
-	return s.jobRepo.AddNote(
+	if err := s.jobRepo.AddNote(
 		ctx,
 		job.ID,
 		note,
+	); err != nil {
+		return err
+	}
+
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityJob,
+		job.ID,
+		models.AuditJobNoteAdded,
+		user.ID,
+		bson.M{
+			"noteId": note.ID.Hex(),
+		},
 	)
+
+	return nil
 }
 
 func (s *JobService) GetJobNotes(
@@ -1104,7 +1148,7 @@ func (s *JobService) CloseJob(
 	req.InternalClosureNotes = strings.TrimSpace(req.InternalClosureNotes)
 
 	now := time.Now()
-
+	oldStatus := job.Status
 	job.Status = models.JobClosed
 	job.CloseReason = req.Reason
 	job.ClosureNotes = req.ClosureNotes
@@ -1121,6 +1165,18 @@ func (s *JobService) CloseJob(
 		return nil, err
 	}
 
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityJob,
+		job.ID,
+		models.AuditJobClosed,
+		user.ID,
+		bson.M{
+			"from":   oldStatus,  // resumed
+			"to":     job.Status, // closed
+			"reason": req.Reason,
+		},
+	)
 	return s.buildJobDetailsResponse(
 		ctx,
 		job,
