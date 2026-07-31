@@ -107,6 +107,10 @@ func (s *DeviceService) AddDevice(
 		UpdatedAt:    time.Now(),
 	}
 
+	if device.Type != models.DeviceDesktop &&
+		strings.TrimSpace(device.SerialNumber) == "" {
+		return nil, errors.New("serial number is required for this device type")
+	}
 	// Save
 	err = s.deviceRepo.Create(ctx, device)
 	if err != nil {
@@ -347,6 +351,10 @@ func (s *DeviceService) UpdateDevice(
 		}
 	}
 
+	if device.Type != models.DeviceDesktop &&
+		strings.TrimSpace(device.SerialNumber) == "" {
+		return nil, errors.New("serial number is required for this device type")
+	}
 	device.UpdatedAt = time.Now()
 
 	if err := s.deviceRepo.Update(ctx, device); err != nil {
