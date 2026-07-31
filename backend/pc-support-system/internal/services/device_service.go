@@ -15,17 +15,19 @@ import (
 func NewDeviceService(
 	deviceRepo repository.DeviceRepository,
 	userRepo repository.UserRepository,
+	auditService *AuditService,
 ) *DeviceService {
-
 	return &DeviceService{
-		deviceRepo: deviceRepo,
-		userRepo:   userRepo,
+		deviceRepo:   deviceRepo,
+		userRepo:     userRepo,
+		auditService: auditService,
 	}
 }
 
 type DeviceService struct {
-	deviceRepo repository.DeviceRepository
-	userRepo   repository.UserRepository
+	deviceRepo   repository.DeviceRepository
+	userRepo     repository.UserRepository
+	auditService *AuditService
 }
 
 func (s *DeviceService) AddDevice(
@@ -116,6 +118,18 @@ func (s *DeviceService) AddDevice(
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityDevice,
+		device.ID,
+		models.AuditDeviceCreated,
+		user.ID,
+		bson.M{
+			"type":         device.Type,
+			"serialNumber": device.SerialNumber,
+		},
+	)
 
 	resp := dto.ToDeviceResponse(device)
 
@@ -360,6 +374,17 @@ func (s *DeviceService) UpdateDevice(
 	if err := s.deviceRepo.Update(ctx, device); err != nil {
 		return nil, err
 	}
+
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityDevice,
+		device.ID,
+		models.AuditDeviceUpdated,
+		user.ID,
+		bson.M{
+			"updated": true,
+		},
+	)
 
 	customer, err := s.userRepo.FindByID(ctx, device.CustomerID)
 	if err != nil {
