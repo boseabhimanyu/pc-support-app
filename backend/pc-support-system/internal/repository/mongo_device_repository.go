@@ -86,3 +86,28 @@ func (r *MongoDeviceRepository) FindByID(
 
 	return &device, nil
 }
+
+func (r *MongoDeviceRepository) Update(
+	ctx context.Context,
+	device *models.Device,
+) error {
+
+	_, err := r.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": device.ID},
+		bson.M{
+			"$set": bson.M{
+				"type":          device.Type,
+				"condition":     device.Condition,
+				"brand":         device.Brand,
+				"model":         device.Model,
+				"serial_number": device.SerialNumber,
+				"notes":         device.Notes,
+				"is_active":     device.IsActive,
+				"updated_at":    device.UpdatedAt,
+			},
+		},
+	)
+
+	return err
+}

@@ -100,3 +100,33 @@ func (h *DeviceHandler) GetMyDevices(c *gin.Context) {
 
 	c.JSON(http.StatusOK, devices)
 }
+
+func (h *DeviceHandler) UpdateDevice(c *gin.Context) {
+
+	deviceID := c.Param("deviceId")
+
+	var req dto.UpdateDeviceRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	device, err := h.deviceService.UpdateDevice(
+		c.Request.Context(),
+		deviceID,
+		c.GetString("userID"),
+		req,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, device)
+}

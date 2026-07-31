@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
@@ -101,9 +102,9 @@ func (s *DeviceService) AddDevice(
 		Model:        req.Model,
 		SerialNumber: req.SerialNumber,
 		Notes:        req.Notes,
-
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		IsActive:     true,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
 
 	// Save
@@ -246,6 +247,123 @@ func (s *DeviceService) GetMyDevices(
 	}, nil
 }
 
-// UpdateDevice()
+func (s *DeviceService) UpdateDevice(
+	ctx context.Context,
+	deviceID string,
+	userID string,
+	req dto.UpdateDeviceRequest,
+) (*dto.DeviceResponse, error) {
 
-// DeactivateDevice()
+	deviceObjectID, err := bson.ObjectIDFromHex(deviceID)
+	if err != nil {
+		return nil, errors.New("invalid device id")
+	}
+
+	device, err := s.deviceRepo.FindByID(ctx, deviceObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if device == nil {
+		return nil, errors.New("device not found")
+	}
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if user.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch user.Role {
+
+	case models.RoleReceptionist,
+		models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+
+	default:
+		return nil, errors.New("user cannot update devices")
+	}
+
+	if req.Brand != nil {
+		device.Brand = strings.TrimSpace(*req.Brand)
+	}
+
+	if req.Model != nil {
+		device.Model = strings.TrimSpace(*req.Model)
+	}
+
+	if req.Type != nil {
+
+		if !req.Type.IsValid() {
+			return nil, errors.New("invalid device type")
+		}
+
+		device.Type = *req.Type
+	}
+
+	if req.Condition != nil {
+
+		if !req.Condition.IsValid() {
+			return nil, errors.New("invalid device condition")
+		}
+
+		device.Condition = *req.Condition
+	}
+
+	if req.Notes != nil {
+		device.Notes = strings.TrimSpace(*req.Notes)
+	}
+
+	if req.IsActive != nil {
+		device.IsActive = *req.IsActive
+	}
+
+	if req.SerialNumber != nil {
+
+		switch user.Role {
+
+		case models.RoleHeadTechnician,
+			models.RoleAdmin,
+			models.RoleSuperAdmin:
+
+			device.SerialNumber = strings.TrimSpace(*req.SerialNumber)
+
+		default:
+			return nil, errors.New("only head technician or above can update serial number")
+		}
+	}
+
+	device.UpdatedAt = time.Now()
+
+	if err := s.deviceRepo.Update(ctx, device); err != nil {
+		return nil, err
+	}
+
+	customer, err := s.userRepo.FindByID(ctx, device.CustomerID)
+	if err != nil {
+		return nil, err
+	}
+
+	if customer == nil {
+		return nil, errors.New("customer not found")
+	}
+
+	resp := dto.ToDeviceResponse(device)
+	resp.Customer = dto.ToCustomerSummary(customer)
+
+	return &resp, nil
+}

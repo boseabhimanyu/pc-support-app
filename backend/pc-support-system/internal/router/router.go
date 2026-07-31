@@ -120,6 +120,16 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				),
 				deviceHandler.GetDevice,
 			)
+			protected.PATCH(
+				"/devices/:deviceId",
+				deviceHandler.UpdateDevice,
+				auth.RequireRoles(
+					string(models.RoleReceptionist),
+					string(models.RoleHeadTechnician),
+					string(models.RoleAdmin),
+					string(models.RoleSuperAdmin),
+				),
+			)
 			protected.GET(
 				"/customers-search",
 				auth.RequireRoles(

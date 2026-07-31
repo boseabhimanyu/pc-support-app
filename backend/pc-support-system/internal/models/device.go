@@ -37,6 +37,7 @@ type Device struct {
 	Condition    DeviceCondition `bson:"condition" json:"condition"`
 	CreatedAt    time.Time       `bson:"created_at" json:"createdAt"`
 	UpdatedAt    time.Time       `bson:"updated_at" json:"updatedAt"`
+	IsActive     bool            `bson:"is_active" json:"isActive"`
 }
 
 type Component struct {

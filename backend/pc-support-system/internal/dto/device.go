@@ -13,17 +13,16 @@ type AddDeviceRequest struct {
 }
 
 type DeviceResponse struct {
-	ID string `json:"id"`
+	ID           string                 `json:"id"`
+	Type         models.DeviceType      `json:"type"`
+	Condition    models.DeviceCondition `json:"condition"`
+	Brand        string                 `json:"brand"`
+	Model        string                 `json:"model"`
+	SerialNumber string                 `json:"serialNumber"`
+	Notes        string                 `json:"notes,omitempty"`
+	IsActive     bool                   `json:"isActive"`
 
-	Customer CustomerSummary `json:"customer"`
-
-	Type      models.DeviceType      `json:"type"`
-	Condition models.DeviceCondition `json:"condition"`
-
-	Brand        string `json:"brand,omitempty"`
-	Model        string `json:"model,omitempty"`
-	SerialNumber string `json:"serialNumber,omitempty"`
-	Notes        string `json:"notes,omitempty"`
+	Customer CustomerSummary `json:"customer,omitempty"`
 }
 
 type CustomerSummary struct {
@@ -42,6 +41,7 @@ func ToDeviceResponse(device *models.Device) DeviceResponse {
 		Model:        device.Model,
 		SerialNumber: device.SerialNumber,
 		Notes:        device.Notes,
+		IsActive:     device.IsActive,
 	}
 }
 
@@ -57,13 +57,13 @@ func ToDeviceResponses(devices []models.Device) []DeviceResponse {
 }
 
 type UpdateDeviceRequest struct {
-	Type      *models.DeviceType      `json:"type"`
-	Condition *models.DeviceCondition `json:"condition"`
-
-	Brand        *string `json:"brand"`
-	Model        *string `json:"model"`
-	SerialNumber *string `json:"serialNumber"`
-	Notes        *string `json:"notes"`
+	Brand        *string                 `json:"brand,omitempty"`
+	Model        *string                 `json:"model,omitempty"`
+	Type         *models.DeviceType      `json:"type,omitempty"`
+	Condition    *models.DeviceCondition `json:"condition,omitempty"`
+	Notes        *string                 `json:"notes,omitempty"`
+	IsActive     *bool                   `json:"isActive,omitempty"`
+	SerialNumber *string                 `json:"serialNumber,omitempty"`
 }
 
 func ToCustomerSummary(user *models.User) CustomerSummary {

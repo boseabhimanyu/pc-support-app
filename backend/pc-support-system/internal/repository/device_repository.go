@@ -20,5 +20,5 @@ type DeviceRepository interface {
 		customerID bson.ObjectID,
 	) ([]models.Device, error)
 
-	// Update(ctx context.Context, device *models.Device) error
+	Update(ctx context.Context, device *models.Device) error
 }
