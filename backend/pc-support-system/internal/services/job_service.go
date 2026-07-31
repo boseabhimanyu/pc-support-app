@@ -149,7 +149,10 @@ func (s *JobService) CreateJob(
 		job.ID,
 		models.AuditJobCreated,
 		creator.ID,
-		nil,
+		bson.M{
+			"jobNumber": job.JobNumber,
+			"status":    job.Status,
+		},
 	)
 
 	return s.buildJobSummaryResponse(ctx, job)

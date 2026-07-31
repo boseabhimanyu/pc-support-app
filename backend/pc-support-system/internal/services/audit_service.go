@@ -45,3 +45,11 @@ func (s *AuditService) Log(
 		event,
 	)
 }
+
+type AuditLogRequest struct {
+	EntityType  models.AuditEntityType
+	EntityID    bson.ObjectID
+	EventType   models.AuditEventType
+	PerformedBy bson.ObjectID
+	Metadata    bson.M
+}
