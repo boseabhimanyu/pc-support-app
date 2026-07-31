@@ -15,12 +15,17 @@ import (
 )
 
 type UserService struct {
-	userRepo repository.UserRepository
+	userRepo     repository.UserRepository
+	auditService *AuditService
 }
 
-func NewUserService(userRepo repository.UserRepository) *UserService {
+func NewUserService(
+	userRepo repository.UserRepository,
+	auditService *AuditService,
+) *UserService {
 	return &UserService{
-		userRepo: userRepo,
+		userRepo:     userRepo,
+		auditService: auditService,
 	}
 }
 
@@ -245,6 +250,17 @@ func (s *UserService) CreateCustomer(
 		return nil, err
 	}
 
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityCustomer,
+		user.ID,
+		models.AuditCustomerCreated,
+		creator.ID,
+		bson.M{
+			"phone": user.Phone,
+			"email": user.Email,
+		},
+	)
 	resp := dto.ToCustomerResponse(user)
 
 	return &resp, nil
@@ -296,7 +312,21 @@ func (s *UserService) SetCustomerPassword(
 	customer.UpdatedAt = time.Now()
 	customer.UpdatedByID = &updatedByID
 
-	return s.userRepo.UpdatePassword(ctx, customer)
+	if err := s.userRepo.UpdatePassword(ctx, customer); err != nil {
+		return err
+	}
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityUser,
+		customer.ID,
+		models.AuditPasswordChanged,
+		updatedByID,
+		bson.M{
+			"selfService": updatedByID == customer.ID,
+		},
+	)
+
+	return nil
 }
 
 func (s *UserService) UpdateCustomer(
@@ -409,6 +439,17 @@ func (s *UserService) UpdateCustomer(
 		return nil, err
 	}
 
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityCustomer,
+		customer.ID,
+		models.AuditCustomerUpdated,
+		updater.ID,
+		bson.M{
+			"phone": customer.Phone,
+			"email": customer.Email,
+		},
+	)
 	resp := dto.ToCustomerResponse(customer)
 
 	return &resp, nil

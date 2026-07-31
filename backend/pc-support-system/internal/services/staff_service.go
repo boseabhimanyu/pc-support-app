@@ -130,6 +130,19 @@ func (s *UserService) CreateStaff(
 		return nil, err
 	}
 
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityUser,
+		user.ID,
+		models.AuditUserCreated,
+		creator.ID,
+		bson.M{
+			"role":  user.Role,
+			"state": user.State,
+			"phone": user.Phone,
+			"email": user.Email,
+		},
+	)
 	resp := dto.ToUserResponse(user)
 
 	return &resp, nil
@@ -216,7 +229,20 @@ func (s *UserService) SetStaffPassword(
 	staff.UpdatedAt = time.Now()
 	staff.UpdatedByID = &updatedByID
 
-	return s.userRepo.UpdatePassword(ctx, staff)
+	if err := s.userRepo.UpdatePassword(ctx, staff); err != nil {
+		return err
+	}
+
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityUser,
+		staff.ID,
+		models.AuditPasswordChanged,
+		updatedByID,
+		nil,
+	)
+
+	return nil
 }
 
 func (s *UserService) SearchStaff(
@@ -370,6 +396,19 @@ func (s *UserService) UpdateStaff(
 		return nil, err
 	}
 
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityUser,
+		staff.ID,
+		models.AuditUserUpdated,
+		updater.ID,
+		bson.M{
+			"role":  staff.Role,
+			"state": staff.State,
+			"phone": staff.Phone,
+			"email": staff.Email,
+		},
+	)
 	resp := dto.ToUserResponse(staff)
 
 	return &resp, nil

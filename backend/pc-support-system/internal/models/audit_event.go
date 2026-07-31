@@ -30,8 +30,9 @@ const (
 	AuditCustomerCreated AuditEventType = "customer_created"
 	AuditCustomerUpdated AuditEventType = "customer_updated"
 
-	AuditUserCreated AuditEventType = "user_created"
-	AuditUserUpdated AuditEventType = "user_updated"
+	AuditUserCreated     AuditEventType = "user_created"
+	AuditUserUpdated     AuditEventType = "user_updated"
+	AuditPasswordChanged AuditEventType = "password_changed"
 )
 
 type AuditEvent struct {
