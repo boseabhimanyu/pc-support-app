@@ -13,21 +13,24 @@ import (
 )
 
 type JobService struct {
-	jobRepo    repository.JobRepository
-	userRepo   repository.UserRepository
-	deviceRepo repository.DeviceRepository
+	jobRepo      repository.JobRepository
+	userRepo     repository.UserRepository
+	deviceRepo   repository.DeviceRepository
+	auditService *AuditService
 }
 
 func NewJobService(
 	jobRepo repository.JobRepository,
 	userRepo repository.UserRepository,
 	deviceRepo repository.DeviceRepository,
+	auditService *AuditService,
 ) *JobService {
 
 	return &JobService{
-		jobRepo:    jobRepo,
-		userRepo:   userRepo,
-		deviceRepo: deviceRepo,
+		jobRepo:      jobRepo,
+		userRepo:     userRepo,
+		deviceRepo:   deviceRepo,
+		auditService: auditService,
 	}
 }
 
@@ -139,6 +142,15 @@ func (s *JobService) CreateJob(
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.auditService.Log(
+		ctx,
+		models.EntityJob,
+		job.ID,
+		models.AuditJobCreated,
+		creator.ID,
+		nil,
+	)
 
 	return s.buildJobSummaryResponse(ctx, job)
 }
