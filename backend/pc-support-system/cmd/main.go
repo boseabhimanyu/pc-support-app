@@ -7,6 +7,7 @@ import (
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/config"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/database"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/router"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -27,6 +28,8 @@ func main() {
 			log.Printf("mongo disconnect error: %v", err)
 		}
 	}()
+
+	gin.SetMode(cfg.GinMode)
 
 	// middleware.StartCleanup() // Enable when rate limiting is introduced (v1.1)
 

@@ -25,6 +25,7 @@ MONGO_DB_NAME=pc-<dbname>
 PORT=<port for webserver>
 JWT_SECRET=<secret-phrase>
 JWT_EXPIRY_HOURS=24
+GIN_MODE=debug //debug or release
 
 ```
 

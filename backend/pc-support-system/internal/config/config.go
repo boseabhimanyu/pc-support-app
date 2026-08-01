@@ -15,6 +15,7 @@ type Config struct {
 	ServerPort     string
 	JWTSecret      string
 	JWTExpiryHours int
+	GinMode        string
 }
 
 func Load() (Config, error) {
@@ -67,12 +68,17 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("invalid JWT_EXPIRY_HOURS")
 	}
 
+	gin_mode, err := extractEnv("GIN_MODE")
+	if err != nil {
+		return Config{}, err
+	}
 	return Config{
 		MongoUri:       mongoURI,
 		MongoDB:        mongoDB,
 		ServerPort:     port,
 		JWTSecret:      jwtSecret,
 		JWTExpiryHours: jwtExpiryHours,
+		GinMode:        gin_mode,
 	}, nil
 }
 
