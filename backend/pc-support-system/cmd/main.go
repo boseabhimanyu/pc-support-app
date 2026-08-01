@@ -28,6 +28,8 @@ func main() {
 		}
 	}()
 
+	// middleware.StartCleanup() // Enable when rate limiting is introduced (v1.1)
+
 	router := router.NewRouter(db, cfg)
 
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)

@@ -69,6 +69,9 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 		{
 			open.POST("/register", authHandler.Register)
 			open.POST("/login", authHandler.Login)
+			// open.POST("/register", middleware.RateLimit(), authHandler.Register)
+			// open.POST("/login", middleware.RateLimit(), authHandler.Login)
+
 		}
 
 		protected := api.Group("")
