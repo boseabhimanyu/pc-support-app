@@ -28,6 +28,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 
 	auditRepo := repository.NewAuditRepository(database)
 	auditService := services.NewAuditService(auditRepo)
+	auditHandler := handlers.NewAuditHandler(auditService)
 	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
 
 	authHandler := handlers.NewAuthHandler(authService, cfg)
@@ -59,6 +60,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 	)
 
 	jobHandler := handlers.NewJobHandler(jobService)
+
 	// API Version
 	api := r.Group("/api/v1")
 	{
@@ -187,7 +189,17 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 			// 	),
 			// 	userHandler.CustomerState,
 			// )
-
+			audit := protected.Group("/audit-logs")
+			{
+				audit.GET(
+					"",
+					auth.RequireRoles(
+						string(models.RoleAdmin),
+						string(models.RoleSuperAdmin),
+					),
+					auditHandler.GetAuditLogs,
+				)
+			}
 			staff := protected.Group("/staff")
 			{
 				staff.POST(

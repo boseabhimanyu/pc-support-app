@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
@@ -43,6 +44,26 @@ func (s *AuditService) Log(
 	return s.repo.CreateEvent(
 		ctx,
 		event,
+	)
+}
+
+func (s *AuditService) FindAuditLogs(
+	ctx context.Context,
+	filter repository.AuditFilter,
+) ([]*models.AuditEvent, error) {
+
+	if filter.Entity == "" &&
+		filter.EntityID == nil &&
+		filter.PerformedBy == nil &&
+		filter.Action == "" {
+
+		// optional: prevent loading millions of logs
+		return nil, errors.New("audit filter required")
+	}
+
+	return s.repo.FindAuditLogs(
+		ctx,
+		filter,
 	)
 }
 
