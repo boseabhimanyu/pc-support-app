@@ -32,6 +32,8 @@ type JobRepository interface {
 
 	CloseJob(ctx context.Context, job *models.Job) error
 
+	SearchJobs(ctx context.Context, query string) ([]*models.Job, error)
+
 	//FindOpenJobByDeviceID(ctx, deviceID) // To find anyexisting open job for the same device
 
 	GenerateJobNumber(ctx context.Context) (string, error)

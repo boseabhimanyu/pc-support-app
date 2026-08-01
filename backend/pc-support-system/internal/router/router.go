@@ -334,6 +334,8 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					"/:jobId/close",
 					jobHandler.CloseJob,
 				)
+				jobs.GET("/search",
+					jobHandler.SearchJobs)
 
 			}
 		}

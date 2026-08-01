@@ -350,3 +350,24 @@ func (h *JobHandler) CloseJob(c *gin.Context) {
 
 	c.JSON(http.StatusOK, job)
 }
+
+func (h *JobHandler) SearchJobs(c *gin.Context) {
+
+	query := c.Query("q")
+
+	jobs, err := h.jobService.SearchJobs(
+		c.Request.Context(),
+		query,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"count": len(jobs),
+		"jobs":  jobs,
+	})
+}

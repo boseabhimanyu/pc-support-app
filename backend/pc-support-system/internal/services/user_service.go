@@ -300,6 +300,10 @@ func (s *UserService) SetCustomerPassword(
 		return errors.New("password is required")
 	}
 
+	if err := validation.ValidatePassword(req.Password); err != nil {
+		return err
+	}
+
 	hash, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
 		bcrypt.DefaultCost,

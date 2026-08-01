@@ -216,6 +216,10 @@ func (s *UserService) SetStaffPassword(
 		return errors.New("password is required")
 	}
 
+	if err := validation.ValidatePassword(req.Password); err != nil {
+		return err
+	}
+
 	// Hash password
 	hash, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),

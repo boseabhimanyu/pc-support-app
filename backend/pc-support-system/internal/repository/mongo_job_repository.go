@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
@@ -62,6 +63,8 @@ func (r *MongoJobRepository) FindByJobNumber(
 	ctx context.Context,
 	jobNumber string,
 ) (*models.Job, error) {
+
+	jobNumber = strings.TrimSpace(strings.ToUpper(jobNumber))
 
 	var job models.Job
 
@@ -377,4 +380,48 @@ func (r *MongoJobRepository) CloseJob(
 	)
 
 	return err
+}
+
+func (r *MongoJobRepository) SearchJobs(
+	ctx context.Context,
+	query string,
+) ([]*models.Job, error) {
+
+	query = strings.TrimSpace(query)
+
+	filter := bson.M{
+		"$or": []bson.M{
+			{
+				"job_number": bson.M{
+					"$regex":   query,
+					"$options": "i",
+				},
+			},
+		},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var jobs []*models.Job
+
+	for cursor.Next(ctx) {
+
+		var job models.Job
+
+		if err := cursor.Decode(&job); err != nil {
+			return nil, err
+		}
+
+		jobs = append(jobs, &job)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
 }

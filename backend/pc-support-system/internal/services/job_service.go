@@ -1182,3 +1182,51 @@ func (s *JobService) CloseJob(
 		job,
 	)
 }
+
+func (s *JobService) SearchJobs(
+	ctx context.Context,
+	query string,
+) ([]dto.JobResponse, error) {
+
+	query = strings.TrimSpace(query)
+
+	if query == "" {
+		return []dto.JobResponse{}, nil
+	}
+
+	// Exact Job Number match
+	job, err := s.jobRepo.FindByJobNumber(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	if job != nil {
+
+		resp, err := s.buildJobSummaryResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		return []dto.JobResponse{*resp}, nil
+	}
+
+	// Fallback to normal search
+	jobs, err := s.jobRepo.SearchJobs(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]dto.JobResponse, 0, len(jobs))
+
+	for _, job := range jobs {
+
+		resp, err := s.buildJobSummaryResponse(ctx, job)
+		if err != nil {
+			return nil, err
+		}
+
+		responses = append(responses, *resp)
+	}
+
+	return responses, nil
+}

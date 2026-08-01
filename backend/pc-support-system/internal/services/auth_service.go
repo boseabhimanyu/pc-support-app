@@ -53,7 +53,10 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) err
 		return err
 	}
 
-	// Password validation can be added later
+	// Password validation
+	if err := validation.ValidatePassword(req.Password); err != nil {
+		return err
+	}
 
 	// Check if phone already exists
 	existingUser, err := s.userRepo.FindByPhone(ctx, req.Phone)
