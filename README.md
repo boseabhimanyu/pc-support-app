@@ -27,3 +27,15 @@ JWT_SECRET=<secret-phrase>
 JWT_EXPIRY_HOURS=24
 
 ```
+
+```
+
+Initial System Setup
+
+1. Register the first user.
+2. Update the user's role in MongoDB to "super_admin".
+3. Log in again.
+4. Create the Admin account.
+5. Use the Admin account for all business operations.
+
+```
