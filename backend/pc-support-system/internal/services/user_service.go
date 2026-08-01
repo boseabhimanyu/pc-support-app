@@ -89,7 +89,7 @@ func (s *UserService) UpdateProfile(
 	// Email
 	if req.Email != nil {
 
-		email, err := validation.ValidateEmail(*req.Email, false)
+		email, err := validation.ValidateEmail(*req.Email, true)
 		if err != nil {
 			return nil, err
 		}
@@ -187,7 +187,7 @@ func (s *UserService) CreateCustomer(
 		return nil, err
 	}
 
-	req.Email, err = validation.ValidateEmail(req.Email, false)
+	req.Email, err = validation.ValidateEmail(req.Email, true)
 	if err != nil {
 		return nil, err
 	}
@@ -419,7 +419,7 @@ func (s *UserService) UpdateCustomer(
 	// Email
 	if req.Email != nil {
 
-		email, err := validation.ValidateEmail(*req.Email, false)
+		email, err := validation.ValidateEmail(*req.Email, true)
 		if err != nil {
 			return nil, err
 		}

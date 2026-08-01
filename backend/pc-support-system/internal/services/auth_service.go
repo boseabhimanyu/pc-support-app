@@ -48,7 +48,7 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) err
 		return err
 	}
 
-	req.Email, err = validation.ValidateEmail(req.Email, false)
+	req.Email, err = validation.ValidateEmail(req.Email, true)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*models.
 
 	var err error
 
-	req.Email, err = validation.ValidateEmail(req.Email, false)
+	req.Email, err = validation.ValidateEmail(req.Email, true)
 	if err != nil {
 		return nil, err
 	}

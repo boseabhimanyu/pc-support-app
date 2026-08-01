@@ -57,7 +57,7 @@ type CreateCustomerRequest struct {
 	FirstName string `json:"firstName" binding:"required"`
 	LastName  string `json:"lastName"`
 	Phone     string `json:"phone" binding:"required"`
-	Email     string `json:"email"`
+	Email     string `json:"email" binding:"required,email"`
 }
 
 type CustomerResponse struct {
