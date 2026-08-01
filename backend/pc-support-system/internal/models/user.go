@@ -38,8 +38,10 @@ type User struct {
 	CreatedAt time.Time `bson:"created_at" json:"createdAt"`
 	UpdatedAt time.Time `bson:"updated_at" json:"updatedAt"`
 
-	CreatedByID *bson.ObjectID `bson:"created_by_id,omitempty" json:"-"`
-	UpdatedByID *bson.ObjectID `bson:"updated_by_id,omitempty" json:"-"`
+	CreatedByID           *bson.ObjectID `bson:"created_by_id,omitempty" json:"-"`
+	UpdatedByID           *bson.ObjectID `bson:"updated_by_id,omitempty" json:"-"`
+	CurrentRefreshToken   string         `bson:"current_refresh_token,omitempty" json:"-"`
+	RefreshTokenExpiresAt *time.Time     `bson:"refresh_token_expires_at,omitempty" json:"-"`
 }
 
 func (r Role) IsValid() bool {

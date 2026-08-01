@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -17,6 +18,8 @@ type UserRepository interface {
 	UpdatePassword(ctx context.Context, user *models.User) error
 	UpdateCustomer(ctx context.Context, user *models.User) error
 	SearchStaff(ctx context.Context, query string) ([]models.User, error)
-
+	UpdateRefreshToken(ctx context.Context, userID bson.ObjectID, token string, expiresAt time.Time) error
+	ClearRefreshToken(ctx context.Context, userID bson.ObjectID) error
+	FindByRefreshToken(ctx context.Context, token string) (*models.User, error)
 	// Delete(id bson.ObjectID) error
 }

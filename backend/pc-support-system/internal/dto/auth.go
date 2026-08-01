@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
+import (
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
+)
 
 type RegisterRequest struct {
 	FirstName string `json:"firstName" binding:"required,min=2,max=50"`
@@ -16,8 +18,10 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Token string       `json:"token"`
-	User  UserResponse `json:"user"`
+	User         UserResponse `json:"user"`
+	AccessToken  string       `json:"accessToken"`
+	RefreshToken string       `json:"refreshToken"`
+	ExpiresIn    int64        `json:"expiresIn"`
 }
 
 func ToUserResponse(user *models.User) UserResponse {
@@ -30,4 +34,8 @@ func ToUserResponse(user *models.User) UserResponse {
 		Role:      user.Role,
 		State:     user.State,
 	}
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken"`
 }

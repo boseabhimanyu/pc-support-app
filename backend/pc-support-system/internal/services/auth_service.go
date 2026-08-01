@@ -9,16 +9,20 @@ import (
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/validation"
+	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	userRepo repository.UserRepository
+	userRepo  repository.UserRepository
+	jwtSecret string
 }
 
-func NewAuthService(repo repository.UserRepository) *AuthService {
+func NewAuthService(repo repository.UserRepository, jwtSecret string) *AuthService {
 	return &AuthService{
-		userRepo: repo,
+		userRepo:  repo,
+		jwtSecret: jwtSecret,
 	}
 }
 
@@ -139,4 +143,64 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*models.
 	}
 
 	return user, nil
+}
+
+func (s *AuthService) UpdateRefreshToken(
+	ctx context.Context,
+	userID bson.ObjectID,
+	token string,
+	expiresAt time.Time,
+) error {
+	return s.userRepo.UpdateRefreshToken(
+		ctx,
+		userID,
+		token,
+		expiresAt,
+	)
+}
+
+func GenerateRefreshToken(
+	user *models.User,
+	secret string,
+) (string, time.Time, error) {
+
+	expiresAt := time.Now().Add(30 * 24 * time.Hour)
+
+	claims := jwt.MapClaims{
+		"user_id": user.ID.Hex(),
+		"type":    "refresh",
+		"exp":     expiresAt.Unix(),
+		"iat":     time.Now().Unix(),
+	}
+
+	token := jwt.NewWithClaims(
+		jwt.SigningMethodHS256,
+		claims,
+	)
+
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	return tokenString, expiresAt, nil
+}
+
+func (s *AuthService) ClearRefreshToken(
+	ctx context.Context,
+	userID bson.ObjectID,
+) error {
+
+	return s.userRepo.ClearRefreshToken(
+		ctx,
+		userID,
+	)
+}
+
+func (s *AuthService) FindByID(
+	ctx context.Context,
+	userID bson.ObjectID,
+) (*models.User, error) {
+
+	return s.userRepo.FindByID(ctx, userID)
 }

@@ -28,7 +28,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 
 	auditRepo := repository.NewAuditRepository(database)
 	auditService := services.NewAuditService(auditRepo)
-	authService := services.NewAuthService(userRepo)
+	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
 
 	authHandler := handlers.NewAuthHandler(authService, cfg)
 
@@ -81,6 +81,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 			protected.GET("/users/me", userHandler.GetProfile)
 			protected.PATCH("/users/me", userHandler.UpdateProfile)
 			protected.POST("/logout", authHandler.Logout)
+			protected.POST("/refresh", authHandler.RefreshToken)
 			protected.POST(
 				"/devices",
 				auth.RequireRoles(
