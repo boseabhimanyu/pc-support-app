@@ -95,16 +95,38 @@ func (s *UserService) CreateStaff(
 	}
 
 	switch creator.Role {
-	case models.RoleAdmin,
-		models.RoleSuperAdmin:
-		// allowed
-	default:
-		return nil, errors.New("user cannot create staff")
-	}
 
-	if creator.Role == models.RoleAdmin &&
-		req.Role == models.RoleAdmin {
-		return nil, errors.New("admin cannot create another admin")
+	case models.RoleSuperAdmin:
+
+		// Super Admin can ONLY create Admins
+		if req.Role != models.RoleAdmin {
+			return nil, errors.New(
+				"super admin can only create admin accounts",
+			)
+		}
+
+	case models.RoleAdmin:
+
+		switch req.Role {
+
+		case models.RoleReceptionist,
+			models.RoleTechnician,
+			models.RoleHeadTechnician:
+
+			// allowed
+
+		default:
+
+			return nil, errors.New(
+				"admin cannot create this role",
+			)
+		}
+
+	default:
+
+		return nil, errors.New(
+			"user cannot create staff",
+		)
 	}
 
 	now := time.Now()
@@ -196,19 +218,36 @@ func (s *UserService) SetStaffPassword(
 		return errors.New("user account is inactive")
 	}
 
-	// Only Admin / Super Admin can set staff passwords
 	switch updater.Role {
-	case models.RoleAdmin,
-		models.RoleSuperAdmin:
-		// allowed
-	default:
-		return errors.New("user cannot set staff password")
-	}
 
-	// Admin cannot reset another Admin's password
-	if updater.Role == models.RoleAdmin &&
-		staff.Role == models.RoleAdmin {
-		return errors.New("admin cannot reset another admin's password")
+	case models.RoleSuperAdmin:
+
+		if staff.Role != models.RoleAdmin {
+			return errors.New(
+				"super admin can only reset admin passwords",
+			)
+		}
+
+	case models.RoleAdmin:
+
+		switch staff.Role {
+
+		case models.RoleReceptionist,
+			models.RoleTechnician,
+			models.RoleHeadTechnician:
+			// allowed
+
+		default:
+			return errors.New(
+				"admin cannot reset this role",
+			)
+		}
+
+	default:
+
+		return errors.New(
+			"insufficient permissions",
+		)
 	}
 
 	// Validate password
@@ -241,9 +280,13 @@ func (s *UserService) SetStaffPassword(
 		ctx,
 		models.EntityUser,
 		staff.ID,
-		models.AuditPasswordChanged,
+		models.AuditPasswordReset,
 		updatedByID,
-		nil,
+		bson.M{
+			"target_user_email": staff.Email,
+			"target_role":       staff.Role,
+			"reset_by_role":     updater.Role,
+		},
 	)
 
 	return nil
@@ -322,11 +365,34 @@ func (s *UserService) UpdateStaff(
 	}
 
 	switch updater.Role {
-	case models.RoleAdmin,
-		models.RoleSuperAdmin:
-		// allowed
+
+	case models.RoleSuperAdmin:
+
+		if staff.Role != models.RoleAdmin {
+			return nil, errors.New(
+				"super admin can only update admin accounts",
+			)
+		}
+
+	case models.RoleAdmin:
+
+		switch staff.Role {
+
+		case models.RoleReceptionist,
+			models.RoleTechnician,
+			models.RoleHeadTechnician:
+			// allowed
+
+		default:
+			return nil, errors.New(
+				"admin cannot update this role",
+			)
+		}
+
 	default:
-		return nil, errors.New("user cannot update staff")
+		return nil, errors.New(
+			"user cannot update staff",
+		)
 	}
 
 	// First Name

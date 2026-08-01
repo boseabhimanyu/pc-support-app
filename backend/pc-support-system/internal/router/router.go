@@ -89,7 +89,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				auth.RequireRoles(
 					string(models.RoleReceptionist),
 					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
 					string(models.RoleHeadTechnician),
 				),
 				deviceHandler.AddDevice,
@@ -139,7 +138,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					string(models.RoleReceptionist),
 					string(models.RoleHeadTechnician),
 					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
 				),
 			)
 			protected.GET(
@@ -158,7 +156,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					string(models.RoleReceptionist),
 					string(models.RoleHeadTechnician),
 					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
 				),
 				userHandler.CreateCustomer,
 			)
@@ -167,7 +164,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				auth.RequireRoles(
 					string(models.RoleReceptionist),
 					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
 				),
 				userHandler.SetCustomerPassword,
 			)
@@ -177,7 +173,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 				auth.RequireRoles(
 					string(models.RoleReceptionist),
 					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
 				),
 				userHandler.UpdateCustomer,
 			)
@@ -185,7 +180,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 			// 	"PATCH /customers/:customerId/state", auth.RequireRoles(
 			// 		string(models.RoleReceptionist),
 			// 		string(models.RoleAdmin),
-			// 		string(models.RoleSuperAdmin),
 			// 	),
 			// 	userHandler.CustomerState,
 			// )
@@ -250,7 +244,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 						string(models.RoleReceptionist),
 						string(models.RoleHeadTechnician),
 						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
 					),
 					jobHandler.CreateJob,
 				)
@@ -296,7 +289,6 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 					auth.RequireRoles(
 						string(models.RoleHeadTechnician),
 						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
 					),
 					jobHandler.AssignJob,
 				)

@@ -323,10 +323,12 @@ func (s *UserService) SetCustomerPassword(
 		ctx,
 		models.EntityUser,
 		customer.ID,
-		models.AuditPasswordChanged,
+		models.AuditPasswordReset,
 		updatedByID,
 		bson.M{
-			"selfService": updatedByID == customer.ID,
+			"target_user_email": customer.Email,
+			"target_role":       customer.Role,
+			"reset_by_role":     updatedByID,
 		},
 	)
 

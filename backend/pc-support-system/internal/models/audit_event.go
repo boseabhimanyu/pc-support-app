@@ -33,6 +33,7 @@ const (
 	AuditUserCreated     AuditEventType = "user_created"
 	AuditUserUpdated     AuditEventType = "user_updated"
 	AuditPasswordChanged AuditEventType = "password_changed"
+	AuditPasswordReset   AuditEventType = "password_reset"
 )
 
 type AuditEvent struct {
