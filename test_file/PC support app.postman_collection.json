@@ -1,0 +1,1342 @@
+{
+  "info": {
+    "_postman_id": "95342e21-1aed-4267-a91f-e23add1fcbf2",
+    "name": "PC support app",
+    "description": "##Test email address - customer  \n[pooja16@yahoo.com](https://mailto:pooja16@yahoo.com)  \n#Receptionist  \n[ankitg26@gmail.com](https://mailto:ankitg26@gmail.com)  \npasswords - \"password\"  \n[sweta6352@tkltd.in](https://mailto:sweta6352@tkltd.in)  \npassword = Password@123\n\n#Admin  \n[arun86@gmail.com](https://mailto:arun86@gmail.com)  \npassword - password\n\n#Head Technician\n\n[mohits16@gmail.com](https://mailto:mohits16@gmail.com)\n\npassword - Password@123\n\n#Technician\n\n[steve@example.com](https://mailto:steve@example.com)\n\npassword - Password@123",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "27437251",
+    "_collection_link": "https://go.postman.co/collection/27437251-95342e21-1aed-4267-a91f-e23add1fcbf2?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Customer",
+          "item": [
+            {
+              "name": "Jobs",
+              "item": [
+                {
+                  "name": "My Jobs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/me/jobs",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "me",
+                        "jobs"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "My Devices",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/me/devices",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "me",
+                        "devices"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "View single job",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"note\" : \"replacing motherboard\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6990655e3a4c8cdc42f6b8/",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "6a6990655e3a4c8cdc42f6b8",
+                        ""
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ]
+            },
+            {
+              "name": "Health check",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/health",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "health"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register User",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\"firstName\" : \"Satish\",\n\"lastName\" : \"Rana\",\n\"email\" : \"satishrana@gmail.com\",\n\"phone\" : \"6545789625\",\n\"password\" : \"password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/auth/register",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login user",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\"email\" : \"megha97@gmail.com\",\n\"password\" : \"Cat@1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/auth/login",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Logged in user",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/logout",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "logout"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get my profile",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/users/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update profile",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"phone\": \"6545789624\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/v1/users/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Receptionist",
+          "item": [
+            {
+              "name": "Jobs",
+              "item": [
+                {
+                  "name": "Create job",
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"customerId\": \"6a6ae41c479a70fb41eb14e9\",\n  \"deviceId\": \"6a6aea1e6d75a30195c57ba4\",\n  \"problemDescription\": \"Customer is getting black screen\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Create note in jobs",
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"note\" : \"replacing motherboard\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6a06df0fd2a73ef179ce9f/notes",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "6a6a06df0fd2a73ef179ce9f",
+                        "notes"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "View notes in jobs",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"note\" : \"replacing motherboard\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a65a17edfd4490f3693243a/notes",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "6a65a17edfd4490f3693243a",
+                        "notes"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "View single job",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"note\" : \"replacing motherboard\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6a06df0fd2a73ef179ce9f/",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "6a6a06df0fd2a73ef179ce9f",
+                        ""
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Search Jobs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/search?q=20260731",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "search"
+                      ],
+                      "query": [
+                        {
+                          "key": "q",
+                          "value": "20260731"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ]
+            },
+            {
+              "name": "Add device to customer id",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"customerId\": \"6a660268f2f934ae26ff1a9a\",\n    \"type\": \"laptop\",\n    \"brand\": \"HP\",\n    \"model\": \"Elite Book\",\n    \"serialNumber\": \"NSR123456Y\",\n    \"notes\": \"Customer reports webcam not working\",\n    \"condition\": \"working\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/devices",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "devices"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Customer Devices",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"customerId\": \"6a630ccd831f837cdebe6c12\",\n    \"type\": \"Laptop\",\n    \"brand\": \"Acer\",\n    \"model\": \"XD1202365\",\n    \"serialNumber\": \"AK15CJP\",\n    \"notes\": \"Customer reports random shutdowns.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/customers/6a660811f7f1373ec2a74e45/devices",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "customers",
+                    "6a660811f7f1373ec2a74e45",
+                    "devices"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Customer jobs",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"customerId\": \"6a630ccd831f837cdebe6c12\",\n    \"type\": \"Laptop\",\n    \"brand\": \"Acer\",\n    \"model\": \"XD1202365\",\n    \"serialNumber\": \"AK15CJP\",\n    \"notes\": \"Customer reports random shutdowns.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/jobs/customer/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "jobs",
+                    "customer",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get devices by ID",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"customerId\": \"6a630ccd831f837cdebe6c12\",\n    \"type\": \"Laptop\",\n    \"brand\": \"Acer\",\n    \"model\": \"XD1202365\",\n    \"serialNumber\": \"AK15CJP\",\n    \"notes\": \"Customer reports random shutdowns.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/devices/6a637cceb8303571c7fd54fe",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "devices",
+                    "6a637cceb8303571c7fd54fe"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update devices by ID",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"brand\": \"Dell\",\n  \"model\": \"OptiPlex 7090\",\n    \"condition\": \"good\",\n  \"notes\": \"Cabinet cleaned. RAM upgraded.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/devices/6a69c87e4f77634b5cb159cd",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "devices",
+                    "6a69c87e4f77634b5cb159cd"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Customer search",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"customerId\": \"6a630ccd831f837cdebe6c12\",\n    \"type\": \"Laptop\",\n    \"brand\": \"Acer\",\n    \"model\": \"XD1202365\",\n    \"serialNumber\": \"AK15CJP\",\n    \"notes\": \"Customer reports random shutdowns.\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/customers-search?q=vij",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "customers-search"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "vij"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create customer",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Mohit\",\n  \"lastName\": \"Gokhle\",\n  \"phone\": \"9102458755\",\n  \"email\": \"GMohit12@gmail.com\"\n\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/customers",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "customers"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Reset Password",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password\": \"password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/customers/6a660268f2f934ae26ff1a9a/password",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "customers",
+                    "6a660268f2f934ae26ff1a9a",
+                    "password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Customer profile",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"lastName\": \"Raj\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/customers/6a660811f7f1373ec2a74e45",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "customers",
+                    "6a660811f7f1373ec2a74e45"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Audit logs",
+              "item": [
+                {
+                  "name": "User logs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/audit-logs?entity=user",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "audit-logs"
+                      ],
+                      "query": [
+                        {
+                          "key": "entity",
+                          "value": "user"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Job logs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/audit-logs?entity=job",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "audit-logs"
+                      ],
+                      "query": [
+                        {
+                          "key": "entity",
+                          "value": "job"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Customer logs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/audit-logs?entity=customer",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "audit-logs"
+                      ],
+                      "query": [
+                        {
+                          "key": "entity",
+                          "value": "customer"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Device logs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/audit-logs?entity=device",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "audit-logs"
+                      ],
+                      "query": [
+                        {
+                          "key": "entity",
+                          "value": "device"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ]
+            },
+            {
+              "name": "Create Staff",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"firstName\": \"Riya\",\n    \"lastName\": \"Singh\",\n    \"phone\": \"7002569844\",\n    \"email\": \"riya94@gmail.com\",\n    \"role\": \"technician\" \n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/staff",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Staff Password reset",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n   \"password\": \"Password@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/staff/6a6628d4fe72d38b5a551ea2/password",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "6a6628d4fe72d38b5a551ea2",
+                    "password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update staff profile",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n   \"password\": \"Password@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/staff/6a6628d4fe72d38b5a551ea2/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "6a6628d4fe72d38b5a551ea2",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Search staff",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"firstName\": \"Mohit\",\n    \"lastName\": \"Sharma\",\n    \"phone\": \"7845960203\",\n    \"email\": \"mohits16@gmail.com\",\n    \"role\": \"head_technician\" \n}"
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/staff/search?q=tec",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "search"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "tec"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Technician",
+          "item": [
+            {
+              "name": "Jobs",
+              "item": [
+                {
+                  "name": "My jobs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/my",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "my"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Change job status",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"status\" : \"closed\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6aea986d75a30195c57ba5/status",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "6a6aea986d75a30195c57ba5",
+                        "status"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Close Job",
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"reason\" : \"completed\",\n    \"closureNotes\": \"Customer checked and PC is working fine. Customer is happy.\",\n    \"internalClosureNotes\": \"Customer install Macfee Antivirus that corrupted the PC\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6aea986d75a30195c57ba5/close",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "6a6aea986d75a30195c57ba5",
+                        "close"
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Head Technician",
+          "item": [
+            {
+              "name": "Jobs",
+              "item": [
+                {
+                  "name": "My jobs",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/my",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "my"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Assign jobs",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n\"staffId\" : \"6a66281efe72d38b5a551ea1\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6a06df0fd2a73ef179ce9f/assign",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "6a6a06df0fd2a73ef179ce9f",
+                        "assign"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Open job queue",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/open",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "open"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Assigned job queue",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/assigned",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "assigned"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "In-progress job queue",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/in-progress",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "in-progress"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Waiting-customer job queue",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/waiting-customer",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "waiting-customer"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Resumed job queue",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/resumed",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "resumed"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Search staff",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"firstName\": \"Mohit\",\n    \"lastName\": \"Sharma\",\n    \"phone\": \"7845960203\",\n    \"email\": \"mohits16@gmail.com\",\n    \"role\": \"head_technician\" \n}"
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/staff/search?q=tec",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "staff",
+                        "search"
+                      ],
+                      "query": [
+                        {
+                          "key": "q",
+                          "value": "tec"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refresh endpoint",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:{{Port}}/api/v1/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "{{Port}}",
+          "path": [
+            "api",
+            "v1",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "Port",
+      "value": ""
+    }
+  ]
+}

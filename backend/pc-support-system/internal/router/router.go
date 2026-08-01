@@ -6,7 +6,6 @@ import (
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/auth"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/config"
 	handlers "github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/handler"
-	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/services"
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 	r := gin.Default()
 
-	// 1. Global/Public Endpoints
+	// Global/Public Endpoints
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"ok":     true,
@@ -24,327 +23,51 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 		})
 	})
 
+	// Repositories & Services Wiring
 	userRepo := repository.NewUserRepository(database)
-
 	auditRepo := repository.NewAuditRepository(database)
 	auditService := services.NewAuditService(auditRepo)
 	auditHandler := handlers.NewAuditHandler(auditService)
-	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
 
+	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
 	authHandler := handlers.NewAuthHandler(authService, cfg)
 
-	userService := services.NewUserService(
-		userRepo,
-		auditService,
-	)
-
+	userService := services.NewUserService(userRepo, auditService)
 	userHandler := handlers.NewUserHandler(userService)
 
-	jobRepo := repository.NewJobRepository(database)
-
 	deviceRepo := repository.NewDeviceRepository(database)
-
-	deviceService := services.NewDeviceService(
-		deviceRepo,
-		userRepo,
-		auditService,
-	)
-
+	deviceService := services.NewDeviceService(deviceRepo, userRepo, auditService)
 	deviceHandler := handlers.NewDeviceHandler(deviceService)
 
-	jobService := services.NewJobService(
-		jobRepo,
-		userRepo,
-		deviceRepo,
-		auditService,
-	)
-
+	jobRepo := repository.NewJobRepository(database)
+	jobService := services.NewJobService(jobRepo, userRepo, deviceRepo, auditService)
 	jobHandler := handlers.NewJobHandler(jobService)
 
-	// API Version
+	// API Version Group
 	api := r.Group("/api/v1")
 	{
-		// Authentication Routes
-		open := api.Group("/auth")
-		{
-			open.POST("/register", authHandler.Register)
-			open.POST("/login", authHandler.Login)
-			// open.POST("/register", middleware.RateLimit(), authHandler.Register)
-			// open.POST("/login", middleware.RateLimit(), authHandler.Login)
+		// Public Auth Routes
+		RegisterAuthRoutes(api, authHandler, cfg)
 
-		}
-
+		// Protected Routes Group
 		protected := api.Group("")
 		protected.Use(auth.AuthMiddleware(cfg.JWTSecret))
 		{
+			// Base protected endpoints (/me, /logout, /refresh)
 			protected.GET("/me", func(c *gin.Context) {
 				c.JSON(http.StatusOK, gin.H{
 					"userID": c.GetString("userID"),
 					"role":   c.GetString("role"),
 				})
 			})
-			protected.GET("/users/me", userHandler.GetProfile)
-			protected.PATCH("/users/me", userHandler.UpdateProfile)
 			protected.POST("/logout", authHandler.Logout)
 			protected.POST("/refresh", authHandler.RefreshToken)
-			protected.POST(
-				"/devices",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleAdmin),
-					string(models.RoleHeadTechnician),
-				),
-				deviceHandler.AddDevice,
-			)
-			protected.GET(
-				"/me/jobs",
-				auth.RequireRoles(
-					string(models.RoleCustomer),
-				),
-				jobHandler.GetCustomerJobs,
-			)
 
-			protected.GET(
-				"/me/devices",
-				auth.RequireRoles(
-					string(models.RoleCustomer),
-				),
-				deviceHandler.GetMyDevices,
-			)
-
-			protected.GET(
-				"/customers/:customerId/devices",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleTechnician),
-					string(models.RoleHeadTechnician),
-					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
-				),
-				deviceHandler.GetCustomerDevices,
-			)
-			protected.GET(
-				"/devices/:deviceId",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleTechnician),
-					string(models.RoleHeadTechnician),
-					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
-				),
-				deviceHandler.GetDevice,
-			)
-			protected.PATCH(
-				"/devices/:deviceId",
-				deviceHandler.UpdateDevice,
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleHeadTechnician),
-					string(models.RoleAdmin),
-				),
-			)
-			protected.GET(
-				"/customers-search",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleHeadTechnician),
-					string(models.RoleAdmin),
-					string(models.RoleSuperAdmin),
-				),
-				userHandler.SearchCustomers,
-			)
-			protected.POST(
-				"/customers",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleHeadTechnician),
-					string(models.RoleAdmin),
-				),
-				userHandler.CreateCustomer,
-			)
-			protected.PATCH(
-				"/customers/:customerId/password",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleAdmin),
-				),
-				userHandler.SetCustomerPassword,
-			)
-
-			protected.PATCH(
-				"/customers/:customerId",
-				auth.RequireRoles(
-					string(models.RoleReceptionist),
-					string(models.RoleAdmin),
-				),
-				userHandler.UpdateCustomer,
-			)
-			// protected.PATCH(
-			// 	"PATCH /customers/:customerId/state", auth.RequireRoles(
-			// 		string(models.RoleReceptionist),
-			// 		string(models.RoleAdmin),
-			// 	),
-			// 	userHandler.CustomerState,
-			// )
-			audit := protected.Group("/audit-logs")
-			{
-				audit.GET(
-					"",
-					auth.RequireRoles(
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					auditHandler.GetAuditLogs,
-				)
-			}
-			staff := protected.Group("/staff")
-			{
-				staff.POST(
-					"",
-					auth.RequireRoles(
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					userHandler.CreateStaff,
-				)
-
-				staff.PATCH(
-					"/:staffId/password",
-					auth.RequireRoles(
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					userHandler.SetStaffPassword,
-				)
-				staff.GET(
-					"/search",
-					auth.RequireRoles(
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					userHandler.SearchStaff,
-				)
-				staff.PATCH(
-					"/:staffId",
-					auth.RequireRoles(
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					userHandler.UpdateStaff,
-				)
-
-			}
-			jobs := protected.Group("/jobs")
-			{
-				jobs.GET(
-					"/customer/:customerId/",
-					jobHandler.GetCustomerJobsByCustomerID,
-				)
-				jobs.POST(
-					"",
-					auth.RequireRoles(
-						string(models.RoleReceptionist),
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-					),
-					jobHandler.CreateJob,
-				)
-
-				jobs.GET(
-					"/open",
-					auth.RequireRoles(
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					jobHandler.GetOpenJobs,
-				)
-				jobs.GET(
-					"/in-progress",
-					auth.RequireRoles(
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					jobHandler.GetInProgressJobs,
-				)
-				jobs.GET(
-					"/waiting-customer",
-					auth.RequireRoles(
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					jobHandler.GetWaitingCustomerJobs,
-				)
-				jobs.GET(
-					"/resumed",
-					auth.RequireRoles(
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					jobHandler.GetResumedJobs,
-				)
-				jobs.PATCH(
-					"/:jobId/assign",
-					auth.RequireRoles(
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-					),
-					jobHandler.AssignJob,
-				)
-				jobs.GET(
-					"/assigned",
-					auth.RequireRoles(
-						string(models.RoleHeadTechnician),
-						string(models.RoleAdmin),
-						string(models.RoleSuperAdmin),
-					),
-					jobHandler.GetAssignedJobs,
-				)
-				jobs.GET(
-					"/my",
-					auth.RequireRoles(
-						string(models.RoleTechnician),
-						string(models.RoleHeadTechnician),
-					),
-					jobHandler.GetMyJobs,
-				)
-				jobs.PATCH(
-					"/:jobId/status",
-					auth.RequireRoles(
-						string(models.RoleTechnician),
-						string(models.RoleHeadTechnician),
-					),
-					jobHandler.ChangeJobStatus,
-				)
-				jobs.POST(
-					"/:jobId/notes",
-					auth.RequireRoles(
-						string(models.RoleReceptionist),
-						string(models.RoleTechnician),
-						string(models.RoleHeadTechnician),
-					),
-					jobHandler.AddJobNote,
-				)
-				jobs.GET(
-					"/:jobId/notes",
-					jobHandler.GetJobNotes,
-				)
-				jobs.GET(
-					"/:jobId",
-					jobHandler.GetJobByID,
-				)
-				jobs.POST(
-					"/:jobId/close",
-					jobHandler.CloseJob,
-				)
-				jobs.GET("/search",
-					jobHandler.SearchJobs)
-
-			}
+			// Modular Feature Routes
+			RegisterUserRoutes(protected, userHandler)
+			RegisterDeviceRoutes(protected, deviceHandler)
+			RegisterJobRoutes(protected, jobHandler)
+			RegisterAuditRoutes(protected, auditHandler)
 		}
 	}
 
