@@ -64,6 +64,11 @@ func (s *UserService) UpdateProfile(
 		return nil, errors.New("user not found")
 	}
 
+	// Only customers can update their own profile
+	if user.Role != models.RoleCustomer {
+		return nil, errors.New("only customers can update their profile")
+	}
+
 	// First Name
 	if req.FirstName != nil {
 

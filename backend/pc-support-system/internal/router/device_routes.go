@@ -48,7 +48,7 @@ func RegisterDeviceRoutes(rg *gin.RouterGroup, deviceHandler *handlers.DeviceHan
 	)
 	rg.PATCH(
 		"/devices/:deviceId",
-		auth.RequireRoles( // Fixed order bug from your snippet where middleware was placed *after* handler
+		auth.RequireRoles(
 			string(models.RoleReceptionist),
 			string(models.RoleHeadTechnician),
 			string(models.RoleAdmin),

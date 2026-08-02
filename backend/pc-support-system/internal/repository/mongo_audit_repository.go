@@ -94,7 +94,6 @@ func (r *MongoAuditRepository) FindAuditLogs(
 			},
 		),
 	)
-	//log.Println("Cursor next:", cursor.Next(ctx))
 
 	if err != nil {
 		return nil, err

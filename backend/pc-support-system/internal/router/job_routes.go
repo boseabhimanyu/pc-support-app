@@ -85,7 +85,7 @@ func RegisterJobRoutes(rg *gin.RouterGroup, jobHandler *handlers.JobHandler) {
 			jobHandler.GetMyJobs,
 		)
 		jobs.GET(
-			"/me/jobs", // Moved from root protected group to job group context if preferred, or keep on root group
+			"/me/jobs",
 			auth.RequireRoles(string(models.RoleCustomer)),
 			jobHandler.GetCustomerJobs,
 		)

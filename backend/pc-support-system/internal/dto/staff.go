@@ -21,13 +21,13 @@ type SetStaffPasswordRequest struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
-type ChangeStaffRoleRequest struct {
-	Role models.Role `json:"role" binding:"required"`
-}
+// type ChangeStaffRoleRequest struct {
+// 	Role models.Role `json:"role" binding:"required"`
+// }
 
-type ChangeStaffStateRequest struct {
-	State models.UserState `json:"state" binding:"required"`
-}
+// type ChangeStaffStateRequest struct {
+// 	State models.UserState `json:"state" binding:"required"`
+// }
 
 type StaffSummary struct {
 	ID        string           `json:"id"`
