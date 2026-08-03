@@ -1,4 +1,4 @@
-### List of Roles
+# List of Roles
 
 Super Admin
 Admin
@@ -9,7 +9,7 @@ Customer
 
 ## Super Admin
 
-# Purpose
+### Purpose
 
 Owns the system.
 
@@ -22,14 +22,14 @@ Access all queues.
 Access all jobs.
 Access audit logs.
 
-# Restrictions
+### Restrictions
 
 Does not create technicians, receptionists, or customers.
 Does not perform daily operational work.
 
 ## Admin
 
-# Purpose
+### Purpose
 
 Runs the business.
 
@@ -50,7 +50,7 @@ View audit logs.
 
 ## Head Technician
 
-# Purpose
+### Purpose
 
 Runs the workshop.
 
@@ -68,7 +68,7 @@ Close jobs if required.
 
 ## Technician
 
-# Purpose
+### Purpose
 
 Repair devices.
 
@@ -81,7 +81,8 @@ Resume repairs.
 Close completed repairs.
 
 ## Receptionist
-# Purpose
+
+### Purpose
 
 Customer-facing operations.
 
@@ -96,7 +97,8 @@ Reset customer passwords.
 View customer history.
 
 ## Customer
-# Purpose
+
+### Purpose
 
 Track their own repairs.
 

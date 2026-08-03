@@ -102,8 +102,21 @@ func RegisterJobRoutes(rg *gin.RouterGroup, jobHandler *handlers.JobHandler) {
 			jobHandler.AddJobNote,
 		)
 		jobs.GET("/:jobId/notes", jobHandler.GetJobNotes)
-		jobs.GET("/:jobId", jobHandler.GetJobByID)
+		jobs.GET("/:jobId", auth.RequireRoles(
+			string(models.RoleReceptionist),
+			string(models.RoleTechnician),
+			string(models.RoleHeadTechnician),
+			string(models.RoleAdmin),
+			string(models.RoleSuperAdmin),
+			string(models.RoleCustomer), // only if customers may view their own job
+		), jobHandler.GetJobByID)
 		jobs.POST("/:jobId/close", jobHandler.CloseJob)
-		jobs.GET("/search", jobHandler.SearchJobs)
+		jobs.GET("/search", auth.RequireRoles(
+			string(models.RoleReceptionist),
+			string(models.RoleTechnician),
+			string(models.RoleHeadTechnician),
+			string(models.RoleAdmin),
+			string(models.RoleSuperAdmin),
+		), jobHandler.SearchJobs)
 	}
 }

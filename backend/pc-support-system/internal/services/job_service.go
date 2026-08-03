@@ -932,11 +932,20 @@ func (s *JobService) GetJobByID(
 	switch user.Role {
 
 	case models.RoleReceptionist,
-		models.RoleTechnician,
 		models.RoleHeadTechnician,
 		models.RoleAdmin,
 		models.RoleSuperAdmin:
-		// Staff can view any job.
+		// Can view any job.
+
+	case models.RoleTechnician:
+
+		if job.AssignedToID == nil {
+			return nil, errors.New("access denied")
+		}
+
+		if *job.AssignedToID != user.ID {
+			return nil, errors.New("access denied")
+		}
 
 	case models.RoleCustomer:
 
@@ -953,6 +962,7 @@ func (s *JobService) GetJobByID(
 		return nil, err
 	}
 
+	// Hide internal fields from customers.
 	if user.Role == models.RoleCustomer {
 		resp.CloseReason = ""
 		resp.InternalClosureNotes = ""
