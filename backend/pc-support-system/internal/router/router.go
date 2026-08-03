@@ -9,6 +9,8 @@ import (
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/services"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -42,6 +44,8 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 	jobRepo := repository.NewJobRepository(database)
 	jobService := services.NewJobService(jobRepo, userRepo, deviceRepo, auditService)
 	jobHandler := handlers.NewJobHandler(jobService)
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// API Version Group
 	api := r.Group("/api/v1")

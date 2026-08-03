@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	_ "github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/docs"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/config"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/database"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/router"
