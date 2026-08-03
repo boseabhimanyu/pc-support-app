@@ -18,13 +18,6 @@ func RegisterDeviceRoutes(rg *gin.RouterGroup, deviceHandler *handlers.DeviceHan
 		deviceHandler.AddDevice,
 	)
 	rg.GET(
-		"/me/devices",
-		auth.RequireRoles(
-			string(models.RoleCustomer),
-		),
-		deviceHandler.GetMyDevices,
-	)
-	rg.GET(
 		"/customers/:customerId/devices",
 		auth.RequireRoles(
 			string(models.RoleReceptionist),

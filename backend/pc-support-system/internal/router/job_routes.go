@@ -84,11 +84,6 @@ func RegisterJobRoutes(rg *gin.RouterGroup, jobHandler *handlers.JobHandler) {
 			),
 			jobHandler.GetMyJobs,
 		)
-		jobs.GET(
-			"/me/jobs",
-			auth.RequireRoles(string(models.RoleCustomer)),
-			jobHandler.GetCustomerJobs,
-		)
 		jobs.PATCH(
 			"/:jobId/status",
 			auth.RequireRoles(

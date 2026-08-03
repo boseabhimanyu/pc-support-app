@@ -68,6 +68,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 			RegisterDeviceRoutes(protected, deviceHandler)
 			RegisterJobRoutes(protected, jobHandler)
 			RegisterAuditRoutes(protected, auditHandler)
+			RegisterMeRoutes(protected, jobHandler, deviceHandler)
 		}
 	}
 
