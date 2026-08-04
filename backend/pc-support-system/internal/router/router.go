@@ -2,18 +2,49 @@ package router
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/auth"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/config"
 	handlers "github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/handler"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/repository"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/services"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 	r := gin.Default()
+
+	// -------------------------------------------------------------
+	// CORS Configuration
+	// -------------------------------------------------------------
+	r.Use(cors.New(cors.Config{
+		// Allow your Vite development server origin
+		AllowOrigins: []string{"http://localhost:5173", "http://127.0.0.1:5173"},
+
+		// Explicitly allow HTTP methods used by your frontend
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+
+		// Explicitly allow headers sent by your frontend
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization", // Essential for JWT Bearer tokens
+			"X-Requested-With",
+		},
+
+		// Headers exposed to the frontend in responses
+		ExposeHeaders: []string{"Content-Length", "Authorization"},
+
+		// Allow cookies / HTTP authentication headers if needed
+		AllowCredentials: true,
+
+		// Cache preflight OPTIONS request responses for 12 hours
+		MaxAge: 12 * time.Hour,
+	}))
 
 	// Global/Public Endpoints
 	r.GET("/health", func(c *gin.Context) {
