@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 export default function Home() {
   return (
     <Container
-      className="d-flex justify-content-center align-items-center"
-      style={{ minHeight: "100vh" }}
-    >
+    className="d-flex vh-100 justify-content-center align-items-center"
+    style={{ transform: "translateY(-80px)" }}
+>
       <Card className="shadow-sm text-center" style={{ maxWidth: 600 }}>
         <Card.Body className="p-5">
 

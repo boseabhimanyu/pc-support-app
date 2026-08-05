@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Card, Form } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 interface LoginFormProps {
     onSubmit: (data: {
@@ -31,64 +32,85 @@ export default function LoginForm({
     }
 
     return (
-        <Card className="shadow-sm">
 
-            <Card.Body>
 
-                <h3 className="text-center mb-4">
-                    Login
-                </h3>
+<div className="justify-content-center mt-5 pt-5">
 
-                <Form onSubmit={handleSubmit}>
 
-                    <Form.Group className="mb-3">
 
-                        <Form.Label>
-                            Email
-                        </Form.Label>
+    <Card className="shadow-sm mt-5">
 
-                        <Form.Control
-                            required
-                            type="email"
-                            value={email}
-                            onChange={(e) =>
-                                setEmail(e.target.value)
-                            }
-                        />
+        <Card.Body>
 
-                    </Form.Group>
+            <h3 className="text-center mb-4">
+                Login
+            </h3>
 
-                    <Form.Group className="mb-4">
+            <Form onSubmit={handleSubmit}>
 
-                        <Form.Label>
-                            Password
-                        </Form.Label>
+                <Form.Group className="mb-3">
 
-                        <Form.Control
-                            required
-                            type="password"
-                            value={password}
-                            onChange={(e) =>
-                                setPassword(e.target.value)
-                            }
-                        />
+                    <Form.Label>
+                        Email
+                    </Form.Label>
 
-                    </Form.Group>
+                    <Form.Control
+                        required
+                        type="email"
+                        value={email}
+                        onChange={(e) =>
+                            setEmail(e.target.value)
+                        }
+                    />
 
-                    <Button
-                        type="submit"
-                        className="w-100"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? "Signing In..."
-                            : "Login"}
-                    </Button>
+                </Form.Group>
 
-                </Form>
+                <Form.Group className="mb-4">
 
-            </Card.Body>
+                    <Form.Label>
+                        Password
+                    </Form.Label>
 
-        </Card>
+                    <Form.Control
+                        required
+                        type="password"
+                        value={password}
+                        onChange={(e) =>
+                            setPassword(e.target.value)
+                        }
+                    />
+
+                </Form.Group>
+
+                <Button
+                    type="submit"
+                    className="w-100"
+                    disabled={loading}
+                >
+                    {loading
+                        ? "Signing In..."
+                        : "Login"}
+                </Button>
+
+            </Form>
+
+        </Card.Body>
+
+
+
+    </Card>
+
+                <div className="mb-3 pt-3">
+
+        <Link
+            to="/"
+            className="text-decoration-none"
+        >
+            ← Go back to Home
+        </Link>
+
+    </div>
+
+</div>
     );
 }

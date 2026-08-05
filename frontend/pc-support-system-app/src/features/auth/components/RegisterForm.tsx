@@ -7,7 +7,7 @@ import {
   Row,
   Alert,
 } from "react-bootstrap";
-
+import { Link } from "react-router-dom";
 import type { RegisterRequest } from "../types";
 
 interface RegisterFormProps {
@@ -72,15 +72,17 @@ const handleSubmit = async (e: React.FormEvent) => {
     await onSubmit(form);
 };
 
-  return (
-    <Card className="shadow-sm">
-      <Card.Body>
+  return (<div className="justify-content-center mt-5 pt-5">
 
-        <h3 className="mb-4 text-center">
-          Customer Registration
-        </h3>
+    <Card className="shadow-sm mt-5">
 
-        <Form onSubmit={handleSubmit}>
+        <Card.Body>
+
+            <h3 className="text-center mb-4">
+                Register
+            </h3>
+
+            <Form onSubmit={handleSubmit}>
 
           <Row>
 
@@ -192,16 +194,32 @@ const handleSubmit = async (e: React.FormEvent) => {
 )}
 
 <Button
-    type="submit"
-    className="w-100"
-    disabled={loading}
->
-    {loading ? "Creating Account..." : "Register"}
-</Button>
+                    type="submit"
+                    className="w-100"
+                    disabled={loading}
+                >
+                    {loading
+                        ? "Creating Account..."
+                        : "Register"}
+                </Button>
 
-        </Form>
+            </Form>
 
-      </Card.Body>
+        </Card.Body>
+
     </Card>
+
+    <div className="mb-3 pt-3">
+
+        <Link
+            to="/"
+            className="text-decoration-none"
+        >
+            ← Go back to Home
+        </Link>
+
+    </div>
+
+</div>
   );
 }
