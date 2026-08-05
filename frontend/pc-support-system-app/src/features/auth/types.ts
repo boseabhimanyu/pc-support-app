@@ -13,9 +13,29 @@ export interface RegisterRequest {
 }
 
 export interface UserResponse {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string;
+    state: string;
+}
+
+export interface Device {
+
+    id: string;
+
+    brand: string;
+
+    model: string;
+
+    serialNumber: string;
+
+    category: string;
+
+    type: string;
+
+    notes: string
+
 }
