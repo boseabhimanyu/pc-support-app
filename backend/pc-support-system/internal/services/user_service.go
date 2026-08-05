@@ -72,7 +72,7 @@ func (s *UserService) UpdateProfile(
 	// First Name
 	if req.FirstName != nil {
 
-		firstName, err := validation.ValidateName(*req.FirstName)
+		firstName, err := validation.ValidateName(*req.FirstName, "first name")
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +83,7 @@ func (s *UserService) UpdateProfile(
 	// Last Name
 	if req.LastName != nil {
 
-		lastName, err := validation.ValidateName(*req.LastName)
+		lastName, err := validation.ValidateName(*req.LastName, "last name")
 		if err != nil {
 			return nil, err
 		}
@@ -175,13 +175,13 @@ func (s *UserService) CreateCustomer(
 
 	var err error
 
-	req.FirstName, err = validation.ValidateName(req.FirstName)
+	req.FirstName, err = validation.ValidateName(req.FirstName, "first name")
 	if err != nil {
 		return nil, err
 	}
 
 	if req.LastName != "" {
-		req.LastName, err = validation.ValidateName(req.LastName)
+		req.LastName, err = validation.ValidateName(req.LastName, "last name")
 		if err != nil {
 			return nil, err
 		}
@@ -382,7 +382,7 @@ func (s *UserService) UpdateCustomer(
 	// First Name
 	if req.FirstName != nil {
 
-		firstName, err := validation.ValidateName(*req.FirstName)
+		firstName, err := validation.ValidateName(*req.FirstName, "first name")
 		if err != nil {
 			return nil, err
 		}
@@ -393,7 +393,7 @@ func (s *UserService) UpdateCustomer(
 	// Last Name
 	if req.LastName != nil {
 
-		lastName, err := validation.ValidateName(*req.LastName)
+		lastName, err := validation.ValidateName(*req.LastName, "last name")
 		if err != nil {
 			return nil, err
 		}
