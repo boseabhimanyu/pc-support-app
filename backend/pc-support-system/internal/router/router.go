@@ -28,18 +28,18 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 	auditRepo := repository.NewAuditRepository(database)
 	auditService := services.NewAuditService(auditRepo)
 	auditHandler := handlers.NewAuditHandler(auditService)
+	jobRepo := repository.NewJobRepository(database)
+	deviceRepo := repository.NewDeviceRepository(database)
 
 	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
 	authHandler := handlers.NewAuthHandler(authService, cfg)
 
-	userService := services.NewUserService(userRepo, auditService)
+	userService := services.NewUserService(userRepo, deviceRepo, jobRepo, auditService)
 	userHandler := handlers.NewUserHandler(userService)
 
-	deviceRepo := repository.NewDeviceRepository(database)
 	deviceService := services.NewDeviceService(deviceRepo, userRepo, auditService)
 	deviceHandler := handlers.NewDeviceHandler(deviceService)
 
-	jobRepo := repository.NewJobRepository(database)
 	jobService := services.NewJobService(jobRepo, userRepo, deviceRepo, auditService)
 	jobHandler := handlers.NewJobHandler(jobService)
 

@@ -48,6 +48,14 @@ func RegisterUserRoutes(rg *gin.RouterGroup, userHandler *handlers.UserHandler) 
 		),
 		userHandler.UpdateCustomer,
 	)
+	rg.GET("customers/:customerId",
+		auth.RequireRoles(
+			string(models.RoleReceptionist),
+			string(models.RoleAdmin),
+			string(models.RoleHeadTechnician),
+			string(models.RoleSuperAdmin),
+		), userHandler.GetCustomerByID,
+	)
 
 	// Staff management group
 	staff := rg.Group("/staff")
