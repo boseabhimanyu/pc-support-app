@@ -110,6 +110,14 @@ func RegisterJobRoutes(rg *gin.RouterGroup, jobHandler *handlers.JobHandler) {
 			string(models.RoleSuperAdmin),
 			string(models.RoleCustomer), // only if customers may view their own job
 		), jobHandler.GetJobByID)
+		jobs.GET("/number/:jobNumber", auth.RequireRoles(
+			string(models.RoleReceptionist),
+			string(models.RoleTechnician),
+			string(models.RoleHeadTechnician),
+			string(models.RoleAdmin),
+			string(models.RoleSuperAdmin),
+			string(models.RoleCustomer),
+		), jobHandler.GetJobByNumber)
 		jobs.POST("/:jobId/close", jobHandler.CloseJob)
 		jobs.GET("/search", auth.RequireRoles(
 			string(models.RoleReceptionist),
@@ -118,5 +126,6 @@ func RegisterJobRoutes(rg *gin.RouterGroup, jobHandler *handlers.JobHandler) {
 			string(models.RoleAdmin),
 			string(models.RoleSuperAdmin),
 		), jobHandler.SearchJobs)
+
 	}
 }

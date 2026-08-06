@@ -933,19 +933,10 @@ func (s *JobService) GetJobByID(
 
 	case models.RoleReceptionist,
 		models.RoleHeadTechnician,
+		models.RoleTechnician,
 		models.RoleAdmin,
 		models.RoleSuperAdmin:
 		// Can view any job.
-
-	case models.RoleTechnician:
-
-		if job.AssignedToID == nil {
-			return nil, errors.New("access denied")
-		}
-
-		if *job.AssignedToID != user.ID {
-			return nil, errors.New("access denied")
-		}
 
 	case models.RoleCustomer:
 
@@ -1239,4 +1230,73 @@ func (s *JobService) SearchJobs(
 	}
 
 	return responses, nil
+}
+
+func (s *JobService) GetJobByNumber(
+	ctx context.Context,
+	jobNumber string,
+	userID string,
+) (*dto.JobResponse, error) {
+
+	userObjectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	job, err := s.jobRepo.FindByJobNumber(
+		ctx,
+		jobNumber,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if job == nil {
+		return nil, errors.New("job not found")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if user.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch user.Role {
+
+	case models.RoleReceptionist,
+		models.RoleTechnician,
+		models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// Can view any job.
+
+	case models.RoleCustomer:
+
+		if job.CustomerID != user.ID {
+			return nil, errors.New("access denied")
+		}
+
+	default:
+		return nil, errors.New("access denied")
+	}
+
+	resp, err := s.buildJobDetailsResponse(ctx, job)
+	if err != nil {
+		return nil, err
+	}
+
+	// Hide internal fields from customers.
+	if user.Role == models.RoleCustomer {
+		resp.CloseReason = ""
+		resp.InternalClosureNotes = ""
+	}
+
+	return resp, nil
 }
