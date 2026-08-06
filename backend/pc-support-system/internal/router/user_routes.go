@@ -93,5 +93,14 @@ func RegisterUserRoutes(rg *gin.RouterGroup, userHandler *handlers.UserHandler) 
 			),
 			userHandler.UpdateStaff,
 		)
+		staff.GET(
+			"/:staffId",
+			auth.RequireRoles(
+				string(models.RoleHeadTechnician),
+				string(models.RoleAdmin),
+				string(models.RoleSuperAdmin),
+			),
+			userHandler.GetStaffByID,
+		)
 	}
 }

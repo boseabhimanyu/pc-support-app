@@ -38,3 +38,25 @@ type StaffSummary struct {
 	Role      models.Role      `json:"role"`
 	State     models.UserState `json:"state"`
 }
+
+type StaffResponse struct {
+	ID        string           `json:"id"`
+	FirstName string           `json:"firstName"`
+	LastName  string           `json:"lastName"`
+	Phone     string           `json:"phone"`
+	Email     string           `json:"email"`
+	Role      models.Role      `json:"role"`
+	State     models.UserState `json:"state"`
+}
+
+func ToStaffResponse(user *models.User) *StaffResponse {
+	return &StaffResponse{
+		ID:        user.ID.Hex(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Phone:     user.Phone,
+		Email:     user.Email,
+		Role:      user.Role,
+		State:     user.State,
+	}
+}
