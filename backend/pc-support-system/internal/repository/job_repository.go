@@ -20,7 +20,7 @@ type JobRepository interface {
 
 	FindByID(ctx context.Context, id bson.ObjectID) (*models.Job, error)
 
-	FindCustomerJobs(ctx context.Context, customerID bson.ObjectID) ([]*models.Job, error)
+	FindCustomerJobs(ctx context.Context, customerID bson.ObjectID) ([]*models.Job, error) //rename to FindByCustomerID
 
 	UpdateStatus(ctx context.Context, jobID bson.ObjectID, status models.JobStatus) error
 

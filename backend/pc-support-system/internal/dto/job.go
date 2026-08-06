@@ -162,3 +162,19 @@ type CloseJobRequest struct {
 	ClosureNotes         string                `json:"closureNotes"`
 	InternalClosureNotes string                `json:"internalClosureNotes"`
 }
+
+type JobSummary struct {
+	ID        string           `json:"id"`
+	JobNumber string           `json:"jobNumber"`
+	Status    models.JobStatus `json:"status"`
+	CreatedAt time.Time        `json:"createdAt"`
+}
+
+func ToJobSummary(job *models.Job) JobSummary {
+	return JobSummary{
+		ID:        job.ID.Hex(),
+		JobNumber: job.JobNumber,
+		Status:    job.Status,
+		CreatedAt: job.CreatedAt,
+	}
+}

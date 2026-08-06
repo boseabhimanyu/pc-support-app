@@ -157,3 +157,24 @@ func (h *UserHandler) UpdateCustomer(c *gin.Context) {
 
 	c.JSON(http.StatusOK, customer)
 }
+
+func (h *UserHandler) GetCustomerByID(c *gin.Context) {
+
+	customerID := c.Param("customerId")
+	requesterID := c.GetString("userID")
+
+	customer, err := h.userService.GetCustomerByID(
+		c.Request.Context(),
+		customerID,
+		requesterID,
+	)
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, customer)
+}
