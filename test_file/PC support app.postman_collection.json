@@ -40,6 +40,29 @@
                   "response": []
                 },
                 {
+                  "name": "My Jobs - Job Number",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/number/JOB-20260726-0001",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "jobs",
+                        "number",
+                        "JOB-20260726-0001"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
                   "name": "My Devices",
                   "request": {
                     "method": "GET",
@@ -167,7 +190,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\"email\" : \"megha97@gmail.com\",\n\"password\" : \"Cat@1234\"\n}",
+                  "raw": "{\n\"email\" : \"tomhardy@gmail.com\",\n\"password\" : \"Admin@123\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -416,7 +439,7 @@
                       }
                     },
                     "url": {
-                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6a06df0fd2a73ef179ce9f/",
+                      "raw": "http://localhost:{{Port}}/api/v1/jobs/6a6ec2e294891e17cbf0563c",
                       "protocol": "http",
                       "host": [
                         "localhost"
@@ -426,8 +449,7 @@
                         "api",
                         "v1",
                         "jobs",
-                        "6a6a06df0fd2a73ef179ce9f",
-                        ""
+                        "6a6ec2e294891e17cbf0563c"
                       ]
                     }
                   },
@@ -657,6 +679,35 @@
                       "key": "q",
                       "value": "vij"
                     }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get customer by ID",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"customerId\": \"6a630ccd831f837cdebe6c12\",\n    \"type\": \"Laptop\",\n    \"brand\": \"Acer\",\n    \"model\": \"XD1202365\",\n    \"serialNumber\": \"AK15CJP\",\n    \"notes\": \"Customer reports random shutdowns.\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/customers/6a6b65125271e2ba648045f7",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "customers",
+                    "6a6b65125271e2ba648045f7"
                   ]
                 }
               },
@@ -997,6 +1048,35 @@
                       "key": "q",
                       "value": "tec"
                     }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get staff by ID",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"firstName\": \"Mohit\",\n    \"lastName\": \"Sharma\",\n    \"phone\": \"7845960203\",\n    \"email\": \"mohits16@gmail.com\",\n    \"role\": \"head_technician\" \n}"
+                },
+                "url": {
+                  "raw": "http://localhost:{{Port}}/api/v1/staff/6a6cd56f731ccc916ff9b687",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "{{Port}}",
+                  "path": [
+                    "api",
+                    "v1",
+                    "staff",
+                    "6a6cd56f731ccc916ff9b687"
                   ]
                 }
               },

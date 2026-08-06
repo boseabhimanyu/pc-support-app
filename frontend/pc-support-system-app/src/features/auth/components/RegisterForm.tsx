@@ -67,9 +67,28 @@ const handleSubmit = async (e: React.FormEvent) => {
         return;
     }
 
+    if (!form.firstName.trim())
+        validationErrors.push("First name is required.");
+
+    if (!form.lastName.trim())
+        validationErrors.push("Last name is required.");
+
+    if (!/^\d{10}$/.test(form.phone))
+        validationErrors.push("Phone number must contain exactly 10 digits.");
+
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+        validationErrors.push("Invalid email address.");
+
+    if (validationErrors.length > 0) {
+        setErrors(validationErrors);
+        return;
+    }
+
     setErrors([]);
 
-    await onSubmit(form);
+
+await onSubmit(form);
+
 };
 
   return (<div className="justify-content-center mt-5 pt-5">

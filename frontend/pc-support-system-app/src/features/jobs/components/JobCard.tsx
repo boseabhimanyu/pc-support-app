@@ -60,7 +60,7 @@ export default function JobCard({
 
 
                     <Link
-                        to={`/customer/jobs/${job.id}`}
+                        to={`/customer/jobs/${job.jobNumber}`}
                         className="fw-bold text-decoration-none"
                     >
 

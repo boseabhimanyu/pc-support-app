@@ -37,6 +37,9 @@ export default function Register() {
         err.response?.data?.error ?? "Registration failed."
     )
 );
+        setTimeout(() => {
+            setError("");
+        }, 3500);
 
     } finally {
       setLoading(false);

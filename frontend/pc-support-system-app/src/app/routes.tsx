@@ -65,7 +65,7 @@ export default function AppRoutes() {
     }
 />
       <Route
-          path="/customer/jobs/:id"
+          path="/customer/jobs/:jobNumber"
           element={
               <ProtectedRoute>
                   <JobDetails />

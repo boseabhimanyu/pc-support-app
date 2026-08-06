@@ -27,7 +27,7 @@ export const jobApi = {
 
         const response =
             await api.get(
-                `/jobs/${id}`
+                `/jobs/number/${id}`
             );
 
 

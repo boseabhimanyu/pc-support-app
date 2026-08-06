@@ -37,7 +37,7 @@ export default function JobDetails() {
 
 }
 
-    const { id } = useParams();
+    const { jobNumber } = useParams();
 
 
     const [job, setJob] =
@@ -55,13 +55,13 @@ export default function JobDetails() {
 
     useEffect(() => {
 
-        if (id) {
+        if (jobNumber) {
 
             loadJob();
 
         }
 
-    }, [id]);
+    }, [jobNumber]);
 
 
 
@@ -72,7 +72,7 @@ export default function JobDetails() {
             setLoading(true);
 
             const data =
-                await jobApi.getJob(id!);
+                await jobApi.getJob(jobNumber!);
 
             setJob(data);
 
