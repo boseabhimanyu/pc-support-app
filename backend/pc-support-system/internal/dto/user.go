@@ -105,3 +105,14 @@ type UserSummary struct {
 	LastName  string      `json:"lastName"`
 	Role      models.Role `json:"role"`
 }
+
+type CustomerDetailsResponse struct {
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+
+	Devices []DeviceSummary `json:"devices"`
+	Jobs    []JobSummary    `json:"jobs"`
+}

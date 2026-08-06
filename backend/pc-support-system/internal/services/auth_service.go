@@ -31,13 +31,13 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) err
 	var err error
 
 	// Validate & normalize input
-	req.FirstName, err = validation.ValidateName(req.FirstName)
+	req.FirstName, err = validation.ValidateName(req.FirstName, "first name")
 	if err != nil {
 		return err
 	}
 
 	if req.LastName != "" {
-		req.LastName, err = validation.ValidateName(req.LastName)
+		req.LastName, err = validation.ValidateName(req.LastName, "last name")
 		if err != nil {
 			return err
 		}

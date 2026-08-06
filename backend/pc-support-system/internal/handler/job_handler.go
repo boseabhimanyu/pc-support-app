@@ -371,3 +371,25 @@ func (h *JobHandler) SearchJobs(c *gin.Context) {
 		"jobs":  jobs,
 	})
 }
+
+func (h *JobHandler) GetJobByNumber(c *gin.Context) {
+
+	jobNumber := c.Param("jobNumber")
+	userID := c.GetString("userID")
+
+	job, err := h.jobService.GetJobByNumber(
+		c.Request.Context(),
+		jobNumber,
+		userID,
+	)
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, job)
+}

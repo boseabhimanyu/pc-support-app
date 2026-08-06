@@ -22,12 +22,12 @@ func (s *UserService) CreateStaff(
 	var err error
 
 	// Validate & normalize input
-	req.FirstName, err = validation.ValidateName(req.FirstName)
+	req.FirstName, err = validation.ValidateName(req.FirstName, "first name")
 	if err != nil {
 		return nil, err
 	}
 
-	req.LastName, err = validation.ValidateName(req.LastName)
+	req.LastName, err = validation.ValidateName(req.LastName, "last name")
 	if err != nil {
 		return nil, err
 	}
@@ -398,7 +398,7 @@ func (s *UserService) UpdateStaff(
 	// First Name
 	if req.FirstName != nil {
 
-		firstName, err := validation.ValidateName(*req.FirstName)
+		firstName, err := validation.ValidateName(*req.FirstName, "first name")
 		if err != nil {
 			return nil, err
 		}
@@ -409,7 +409,7 @@ func (s *UserService) UpdateStaff(
 	// Last Name
 	if req.LastName != nil {
 
-		lastName, err := validation.ValidateName(*req.LastName)
+		lastName, err := validation.ValidateName(*req.LastName, "last name")
 		if err != nil {
 			return nil, err
 		}
@@ -482,4 +482,60 @@ func (s *UserService) UpdateStaff(
 	resp := dto.ToUserResponse(staff)
 
 	return &resp, nil
+}
+
+func (s *UserService) GetStaffByID(
+	ctx context.Context,
+	staffID string,
+	requesterID string,
+) (*dto.StaffResponse, error) {
+
+	staffObjectID, err := bson.ObjectIDFromHex(staffID)
+	if err != nil {
+		return nil, errors.New("invalid staff id")
+	}
+
+	requesterObjectID, err := bson.ObjectIDFromHex(requesterID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	requester, err := s.userRepo.FindByID(ctx, requesterObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if requester == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if requester.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch requester.Role {
+
+	case models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+		// allowed
+
+	default:
+		return nil, errors.New("access denied")
+	}
+
+	staff, err := s.userRepo.FindByID(ctx, staffObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if staff == nil {
+		return nil, errors.New("staff not found")
+	}
+
+	if staff.Role == models.RoleCustomer {
+		return nil, errors.New("user is not a staff member")
+	}
+
+	return dto.ToStaffResponse(staff), nil
 }

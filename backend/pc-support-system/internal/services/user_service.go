@@ -16,15 +16,21 @@ import (
 
 type UserService struct {
 	userRepo     repository.UserRepository
+	deviceRepo   repository.DeviceRepository
+	jobRepo      repository.JobRepository
 	auditService *AuditService
 }
 
 func NewUserService(
 	userRepo repository.UserRepository,
+	deviceRepo repository.DeviceRepository,
+	jobRepo repository.JobRepository,
 	auditService *AuditService,
 ) *UserService {
 	return &UserService{
 		userRepo:     userRepo,
+		deviceRepo:   deviceRepo,
+		jobRepo:      jobRepo,
 		auditService: auditService,
 	}
 }
@@ -72,7 +78,7 @@ func (s *UserService) UpdateProfile(
 	// First Name
 	if req.FirstName != nil {
 
-		firstName, err := validation.ValidateName(*req.FirstName)
+		firstName, err := validation.ValidateName(*req.FirstName, "first name")
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +89,7 @@ func (s *UserService) UpdateProfile(
 	// Last Name
 	if req.LastName != nil {
 
-		lastName, err := validation.ValidateName(*req.LastName)
+		lastName, err := validation.ValidateName(*req.LastName, "last name")
 		if err != nil {
 			return nil, err
 		}
@@ -175,13 +181,13 @@ func (s *UserService) CreateCustomer(
 
 	var err error
 
-	req.FirstName, err = validation.ValidateName(req.FirstName)
+	req.FirstName, err = validation.ValidateName(req.FirstName, "first name")
 	if err != nil {
 		return nil, err
 	}
 
 	if req.LastName != "" {
-		req.LastName, err = validation.ValidateName(req.LastName)
+		req.LastName, err = validation.ValidateName(req.LastName, "last name")
 		if err != nil {
 			return nil, err
 		}
@@ -382,7 +388,7 @@ func (s *UserService) UpdateCustomer(
 	// First Name
 	if req.FirstName != nil {
 
-		firstName, err := validation.ValidateName(*req.FirstName)
+		firstName, err := validation.ValidateName(*req.FirstName, "first name")
 		if err != nil {
 			return nil, err
 		}
@@ -393,7 +399,7 @@ func (s *UserService) UpdateCustomer(
 	// Last Name
 	if req.LastName != nil {
 
-		lastName, err := validation.ValidateName(*req.LastName)
+		lastName, err := validation.ValidateName(*req.LastName, "last name")
 		if err != nil {
 			return nil, err
 		}
@@ -464,4 +470,99 @@ func (s *UserService) UpdateCustomer(
 	resp := dto.ToCustomerResponse(customer)
 
 	return &resp, nil
+}
+
+func (s *UserService) GetCustomerByID(
+	ctx context.Context,
+	customerID string,
+	requesterID string,
+) (*dto.CustomerDetailsResponse, error) {
+
+	customerObjectID, err := bson.ObjectIDFromHex(customerID)
+	if err != nil {
+		return nil, errors.New("invalid customer id")
+	}
+
+	requesterObjectID, err := bson.ObjectIDFromHex(requesterID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	requester, err := s.userRepo.FindByID(ctx, requesterObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if requester == nil {
+		return nil, errors.New("user not found")
+	}
+
+	if requester.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	switch requester.Role {
+
+	case models.RoleReceptionist,
+		models.RoleHeadTechnician,
+		models.RoleAdmin,
+		models.RoleSuperAdmin:
+
+		// allowed
+
+	default:
+		return nil, errors.New("access denied")
+	}
+
+	customer, err := s.userRepo.FindByID(ctx, customerObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if customer == nil {
+		return nil, errors.New("customer not found")
+	}
+
+	if customer.Role != models.RoleCustomer {
+		return nil, errors.New("user is not a customer")
+	}
+
+	devices, err := s.deviceRepo.FindByCustomerID(ctx, customer.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	jobs, err := s.jobRepo.FindCustomerJobs(ctx, customer.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	deviceResponses := make([]dto.DeviceSummary, 0, len(devices))
+
+	for _, device := range devices {
+
+		deviceResponses = append(
+			deviceResponses,
+			dto.ToDeviceSummary(&device),
+		)
+	}
+
+	jobResponses := make([]dto.JobSummary, 0, len(jobs))
+
+	for _, job := range jobs {
+		jobResponses = append(
+			jobResponses,
+			dto.ToJobSummary(job),
+		)
+	}
+
+	return &dto.CustomerDetailsResponse{
+		ID:        customer.ID.Hex(),
+		FirstName: customer.FirstName,
+		LastName:  customer.LastName,
+		Phone:     customer.Phone,
+		Email:     customer.Email,
+		Devices:   deviceResponses,
+		Jobs:      jobResponses,
+	}, nil
 }

@@ -118,3 +118,24 @@ func (h *UserHandler) UpdateStaff(c *gin.Context) {
 
 	c.JSON(http.StatusOK, staff)
 }
+
+func (h *UserHandler) GetStaffByID(c *gin.Context) {
+
+	staffID := c.Param("staffId")
+	requesterID := c.GetString("userID")
+
+	staff, err := h.userService.GetStaffByID(
+		c.Request.Context(),
+		staffID,
+		requesterID,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, staff)
+}
