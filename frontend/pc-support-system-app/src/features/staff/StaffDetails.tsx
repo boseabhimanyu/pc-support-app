@@ -5,6 +5,7 @@ import {
     Card,
     Col,
     Row,
+    Form,
     Spinner,
 } from "react-bootstrap";
 import {
@@ -13,6 +14,11 @@ import {
 } from "react-router-dom";
 
 import {api} from "../../app/api";
+
+
+
+import { useAuth } from "../auth/hooks/useAuth";
+import {  updateStaff } from "./staffApi";
 
 type Staff = {
     id: string;
@@ -25,6 +31,25 @@ type Staff = {
 };
 
 export default function StaffDetails() {
+
+
+const { user } = useAuth();
+
+const canEdit =
+    user?.role === "admin" ||
+    user?.role === "super_admin";
+
+const [editing, setEditing] = useState(false);
+
+const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+});
+
+const [saving, setSaving] = useState(false);
+const [success, setSuccess] = useState("");
 
     const { staffId } = useParams();
     const navigate = useNavigate();
@@ -58,7 +83,16 @@ export default function StaffDetails() {
                         `/staff/${staffId}`,
                     );
 
-                setStaff(response.data);
+                const staffData = response.data;
+
+setStaff(staffData);
+
+setForm({
+    firstName: staffData.firstName ?? "",
+    lastName: staffData.lastName ?? "",
+    email: staffData.email ?? "",
+    phone: staffData.phone ?? "",
+});
 
             } catch (error: any) {
 
@@ -98,7 +132,63 @@ export default function StaffDetails() {
 
     }
 
+async function handleUpdate(
+    event: React.FormEvent<HTMLFormElement>,
+) {
+    event.preventDefault();
 
+    if (!staffId) {
+        return;
+    }
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+
+        const updatedStaff =
+            await updateStaff(
+                staffId,
+                {
+                    firstName:
+                        form.firstName.trim(),
+                    lastName:
+                        form.lastName.trim(),
+                    email:
+                        form.email.trim(),
+                    phone:
+                        form.phone.trim(),
+                },
+            );
+
+        setStaff(updatedStaff);
+
+        setSuccess(
+            "Staff details updated successfully.",
+        );
+
+        setEditing(false);
+
+    } catch (error: any) {
+
+        console.error(
+            "Staff update error:",
+            error.response?.data,
+        );
+
+        setError(
+            error.response?.data?.error ??
+            error.response?.data?.message ??
+            "Unable to update staff details.",
+        );
+
+    } finally {
+
+        setSaving(false);
+
+    }
+}
     if (loading) {
 
         return (
@@ -110,15 +200,17 @@ export default function StaffDetails() {
     }
 
 
-    if (error) {
+   {error && (
+    <Alert variant="danger" className="mb-3">
+        {error}
+    </Alert>
+)}
 
-        return (
-            <Alert variant="danger">
-                {error}
-            </Alert>
-        );
-
-    }
+{success && (
+    <Alert variant="success" className="mb-3">
+        {success}
+    </Alert>
+)}
 
 
     if (!staff) {
@@ -138,27 +230,143 @@ export default function StaffDetails() {
 
             <div className="d-flex justify-content-between align-items-center mb-4">
 
-                <h2 className="mb-0">
-                    Staff Details
-                </h2>
+    <h2 className="mb-0">
+        Staff Details
+    </h2>
 
-                <Button
-                    variant="secondary"
-                    onClick={() =>
-                        navigate(-1)
-                    }
-                >
-                    Back
-                </Button>
+    <div className="d-flex gap-2">
 
-            </div>
+        {canEdit && !editing && (
+            <Button
+                variant="primary"
+                onClick={() => setEditing(true)}
+            >
+                Edit
+            </Button>
+        )}
 
+        <Button
+            variant="secondary"
+            onClick={() => navigate(-1)}
+        >
+            Back
+        </Button>
 
+    </div>
+
+</div>
+
+{error && (
+    <Alert variant="danger" className="mb-3">
+        {error}
+    </Alert>
+)}
+
+{success && (
+    <Alert variant="success" className="mb-3">
+        {success}
+    </Alert>
+)}
             <Card>
 
                 <Card.Body>
 
-                    <Row className="mb-3">
+            {editing ? (
+
+    <Form onSubmit={handleUpdate}>
+
+        <Form.Group className="mb-3">
+            <Form.Label>
+                First Name
+            </Form.Label>
+
+            <Form.Control
+                value={form.firstName}
+                disabled={saving}
+                onChange={(event) =>
+                    setForm({
+                        ...form,
+                        firstName: event.target.value,
+                    })
+                }
+            />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+            <Form.Label>
+                Last Name
+            </Form.Label>
+
+            <Form.Control
+                value={form.lastName}
+                disabled={saving}
+                onChange={(event) =>
+                    setForm({
+                        ...form,
+                        lastName: event.target.value,
+                    })
+                }
+            />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+            <Form.Label>
+                Email
+            </Form.Label>
+
+            <Form.Control
+                type="email"
+                value={form.email}
+                disabled={saving}
+                onChange={(event) =>
+                    setForm({
+                        ...form,
+                        email: event.target.value,
+                    })
+                }
+            />
+        </Form.Group>
+
+        <Form.Group className="mb-4">
+            <Form.Label>
+                Phone
+            </Form.Label>
+
+            <Form.Control
+                value={form.phone}
+                disabled={saving}
+                onChange={(event) =>
+                    setForm({
+                        ...form,
+                        phone: event.target.value,
+                    })
+                }
+            />
+        </Form.Group>
+
+        <Button
+            type="submit"
+            disabled={saving}
+        >
+            {saving ? "Saving..." : "Save Changes"}
+        </Button>
+
+        <Button
+            type="button"
+            variant="secondary"
+            className="ms-2"
+            disabled={saving}
+            onClick={() => setEditing(false)}
+        >
+            Cancel
+        </Button>
+
+    </Form>
+
+) : (
+
+    <>
+                 <Row className="mb-3">
 
                         <Col md={3}>
                             <strong>
@@ -250,6 +458,10 @@ export default function StaffDetails() {
                         </Col>
 
                     </Row>
+    </>
+
+)}
+                   
 
                 </Card.Body>
 

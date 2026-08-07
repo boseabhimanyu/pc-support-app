@@ -16,3 +16,17 @@ export async function updateStaff(
 
     return response.data;
 }
+
+export async function resetStaffPassword(
+    staffId: string,
+    password: string,
+) {
+    const response = await api.patch(
+        `/staff/${staffId}/password`,
+        {
+            password,
+        },
+    );
+
+    return response.data;
+}
