@@ -126,6 +126,30 @@ export default function AppRoutes() {
     </Route>
 
 <Route
+    path="/technician"
+    element={
+        <ProtectedRoute>
+            <StaffLayout />
+        </ProtectedRoute>
+    }
+>
+    <Route
+        index
+        element={<Dashboard />}
+    />
+
+    <Route
+        path="jobs"
+        element={<h2>Job Management</h2>}
+    />
+
+    <Route
+        path="profile"
+        element={<StaffProfile />}
+    />
+</Route>
+
+<Route
     path="/head-technician"
     element={
         <ProtectedRoute>

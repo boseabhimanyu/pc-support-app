@@ -17,8 +17,9 @@ import {api} from "../../app/api";
 
 
 
+
 import { useAuth } from "../auth/hooks/useAuth";
-import {  updateStaff } from "./staffApi";
+import {  updateStaff, resetStaffPassword } from "./staffApi";
 
 type Staff = {
     id: string;
@@ -50,6 +51,11 @@ const [form, setForm] = useState({
 
 const [saving, setSaving] = useState(false);
 const [success, setSuccess] = useState("");
+const [password, setPassword] = useState("");
+const [showPassword, setShowPassword] = useState(false);
+const [passwordMessage, setPasswordMessage] = useState("");
+const [resettingPassword, setResettingPassword] =
+    useState(false);
 
     const { staffId } = useParams();
     const navigate = useNavigate();
@@ -131,6 +137,57 @@ setForm({
             );
 
     }
+
+    async function handlePasswordReset() {
+
+    if (!staffId) {
+        return;
+    }
+
+    setPasswordMessage("");
+
+    const passwordPattern =
+        /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+    if (!passwordPattern.test(password)) {
+        setPasswordMessage(
+            "Password must contain at least 8 characters, one uppercase letter, one number and one special character.",
+        );
+        return;
+    }
+
+    try {
+
+        setResettingPassword(true);
+
+        await resetStaffPassword(
+            staffId,
+            password,
+        );
+
+        setPasswordMessage(
+            "Staff password reset successfully.",
+        );
+
+        setPassword("");
+
+    } catch (error) {
+
+        console.error(
+            "Staff password reset error:",
+            error,
+        );
+
+        setPasswordMessage(
+            "Unable to reset staff password.",
+        );
+
+    } finally {
+
+        setResettingPassword(false);
+
+    }
+}
 
 async function handleUpdate(
     event: React.FormEvent<HTMLFormElement>,
@@ -234,25 +291,28 @@ async function handleUpdate(
         Staff Details
     </h2>
 
-    <div className="d-flex gap-2">
+   <div className="d-flex gap-2">
 
-        {canEdit && !editing && (
+    {canEdit && !editing && (
+        <>
+
             <Button
                 variant="primary"
                 onClick={() => setEditing(true)}
             >
                 Edit
             </Button>
-        )}
+        </>
+    )}
 
-        <Button
-            variant="secondary"
-            onClick={() => navigate(-1)}
-        >
-            Back
-        </Button>
+    <Button
+        variant="secondary"
+        onClick={() => navigate(-1)}
+    >
+        Back
+    </Button>
 
-    </div>
+</div>
 
 </div>
 
@@ -466,6 +526,102 @@ async function handleUpdate(
                 </Card.Body>
 
             </Card>
+
+            {canEdit && (
+    <Card className="mt-3">
+
+        <Card.Body>
+
+            <Card.Title>
+                Reset Staff Password
+            </Card.Title>
+
+            <Form onSubmit={(event) => {
+                event.preventDefault();
+                handlePasswordReset();
+            }}>
+
+                <Form.Group className="mb-3">
+
+                    <Form.Label>
+                        New Password
+                    </Form.Label>
+
+                    <div className="d-flex gap-2">
+
+                        <Form.Control
+                            type={
+                                showPassword
+                                    ? "text"
+                                    : "password"
+                            }
+                            value={password}
+                            disabled={resettingPassword}
+                            onChange={(event) =>
+                                setPassword(
+                                    event.target.value,
+                                )
+                            }
+                        />
+
+                        <Button
+                            type="button"
+                            variant="outline-secondary"
+                            onClick={() =>
+                                setShowPassword(
+                                    !showPassword,
+                                )
+                            }
+                            disabled={resettingPassword}
+                        >
+                            {showPassword
+                                ? "Hide"
+                                : "Show"}
+                        </Button>
+
+                    </div>
+
+                </Form.Group>
+
+                <div className="text-muted small mb-3">
+                    Password must contain at least 8
+                    characters, one uppercase letter,
+                    one number and one special character.
+                </div>
+
+                {passwordMessage && (
+                    <Alert
+                        variant={
+                            passwordMessage.includes(
+                                "successfully",
+                            )
+                                ? "success"
+                                : "danger"
+                        }
+                    >
+                        {passwordMessage}
+                    </Alert>
+                )}
+
+                <Button
+                    type="submit"
+                    variant="warning"
+                    disabled={
+                        resettingPassword ||
+                        !password
+                    }
+                >
+                    {resettingPassword
+                        ? "Resetting..."
+                        : "Reset Password"}
+                </Button>
+
+            </Form>
+
+        </Card.Body>
+
+    </Card>
+)}
 
         </>
 
