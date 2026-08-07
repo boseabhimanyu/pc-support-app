@@ -7,8 +7,10 @@ import CustomerDashboard from "../features/customer/pages/Dashboard";
 import Profile from "../features/customer/pages/Profile";
 import Devices from "../features/customer/pages/Devices";
 import JobDetails from "../features/customer/pages/JobDetails";
-
+import StaffLayout from "../layouts/StaffLayout";
 import Jobs from "../features/customer/pages/Jobs";
+import Dashboard from "../features/dashboard/Dashboard";
+import StaffProfile from "../features/profile/StaffProfile";
 
 export default function AppRoutes() {
   return (
@@ -72,6 +74,160 @@ export default function AppRoutes() {
               </ProtectedRoute>
           }
 />
+  <Route
+    path="/receptionist"
+    element={
+        <ProtectedRoute>
+            <StaffLayout />
+        </ProtectedRoute>
+    }
+>
+
+    <Route
+        index
+        element={<Dashboard />}
+    />
+
+    <Route
+        path="customers"
+        element={<h2>Customer Management</h2>}
+    />
+
+    <Route
+        path="jobs"
+        element={<h2>Job Management</h2>}
+    />
+
+    <Route
+        path="profile"
+        element={<StaffProfile />}
+    />
+
+    </Route>
+
+      <Route
+    path="/technician"
+    element={
+        <ProtectedRoute>
+            <StaffLayout />
+        </ProtectedRoute>
+    }
+>
+
+    <Route
+        index
+        element={<Dashboard />}
+    />
+
+    <Route
+        path="customers"
+        element={<h2>Customer Management</h2>}
+    />
+
+    <Route
+        path="jobs"
+        element={<h2>Job Management</h2>}
+    />
+
+    <Route
+        path="profile"
+        element={<StaffProfile />}
+    />
+
+    </Route>
+
+      <Route
+    path="/head-technician"
+    element={
+        <ProtectedRoute>
+            <StaffLayout />
+        </ProtectedRoute>
+    }
+>
+
+    <Route
+        index
+        element={<Dashboard />}
+    />
+
+    <Route
+        path="customers"
+        element={<h2>Customer Management</h2>}
+    />
+
+    <Route
+        path="jobs"
+        element={<h2>Job Management</h2>}
+    />
+
+    <Route
+        path="profile"
+        element={<StaffProfile />}
+    />
+
+    </Route>
+
+      <Route
+    path="/admin"
+    element={
+        <ProtectedRoute>
+            <StaffLayout />
+        </ProtectedRoute>
+    }
+>
+
+    <Route
+        index
+        element={<Dashboard />}
+    />
+
+    <Route
+        path="customers"
+        element={<h2>Customer Management</h2>}
+    />
+
+    <Route
+        path="jobs"
+        element={<h2>Job Management</h2>}
+    />
+
+    <Route
+        path="profile"
+        element={<StaffProfile />}
+    />
+
+    </Route>
+
+      <Route
+    path="/super-admin"
+    element={
+        <ProtectedRoute>
+            <StaffLayout />
+        </ProtectedRoute>
+    }
+>
+
+    <Route
+        index
+        element={<Dashboard />}
+    />
+
+    <Route
+        path="customers"
+        element={<h2>Customer Management</h2>}
+    />
+
+    <Route
+        path="jobs"
+        element={<h2>Job Management</h2>}
+    />
+
+    <Route
+        path="profile"
+        element={<StaffProfile />}
+    />
+
+    </Route>
 
       </Routes>
 
