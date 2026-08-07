@@ -79,3 +79,69 @@ export function canResetCustomerPassword(
     ].includes(user.role);
 
 }
+
+export type Role =
+    | "customer"
+    | "receptionist"
+    | "technician"
+    | "head_technician"
+    | "admin"
+    | "super_admin";
+
+export const staffPermissions: Record<
+    Role,
+    {
+        canView: boolean;
+        canCreate: boolean;
+        canEdit: boolean;
+        assignableRoles: Role[];
+    }
+> = {
+    customer: {
+        canView: false,
+        canCreate: false,
+        canEdit: false,
+        assignableRoles: [],
+    },
+
+    receptionist: {
+        canView: false,
+        canCreate: false,
+        canEdit: false,
+        assignableRoles: [],
+    },
+
+    technician: {
+        canView: false,
+        canCreate: false,
+        canEdit: false,
+        assignableRoles: [],
+    },
+
+    head_technician: {
+        canView: true,
+        canCreate: false,
+        canEdit: false,
+        assignableRoles: [],
+    },
+
+    admin: {
+        canView: true,
+        canCreate: true,
+        canEdit: true,
+        assignableRoles: [
+            "receptionist",
+            "technician",
+            "head_technician",
+        ],
+    },
+
+    super_admin: {
+        canView: true,
+        canCreate: true,
+        canEdit: true,
+        assignableRoles: [
+            "admin",
+        ],
+    },
+};

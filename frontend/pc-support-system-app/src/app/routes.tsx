@@ -14,6 +14,8 @@ import StaffProfile from "../features/profile/StaffProfile";
 import CustomerManagement from "../features/customer/CustomerManagement";
 import CustomerDetails    from "../features/customer/CustomerDetails";
 import CustomerForm    from "../features/customer/CustomerForm";
+import StaffManagement from "../features/staff/StaffManagement";
+import StaffDetails from "../features/staff/StaffDetails";
 
 export default function AppRoutes() {
   return (
@@ -123,53 +125,7 @@ export default function AppRoutes() {
 
     </Route>
 
-      <Route
-    path="/technician"
-    element={
-        <ProtectedRoute>
-            <StaffLayout />
-        </ProtectedRoute>
-    }
->
-
-    <Route
-        index
-        element={<Dashboard />}
-    />
-
-    <Route
-        path="customers"
-        element={<CustomerManagement />}
-    />
-
-
-    <Route
-        path="customers/create"
-        element={<CustomerForm />}
-    />
-          <Route
-        path="customers/:customerId/edit"
-        element={<CustomerForm />}
-    />
-
-      <Route
-        path="customers/:customerId"
-        element={<CustomerDetails />}
-    />
-
-    <Route
-        path="jobs"
-        element={<h2>Job Management</h2>}
-    />
-
-    <Route
-        path="profile"
-        element={<StaffProfile />}
-    />
-
-    </Route>
-
-      <Route
+<Route
     path="/head-technician"
     element={
         <ProtectedRoute>
@@ -177,7 +133,6 @@ export default function AppRoutes() {
         </ProtectedRoute>
     }
 >
-
     <Route
         index
         element={<Dashboard />}
@@ -188,22 +143,31 @@ export default function AppRoutes() {
         element={<CustomerManagement />}
     />
 
+    <Route
+        path="customers/create"
+        element={<CustomerForm />}
+    />
 
     <Route
-    path="customers/create"
-    element={<CustomerForm />}
-/>
-
-      <Route
-    path="customers/:customerId/edit"
-    element={<CustomerForm />}
-/>
-
+        path="customers/:customerId/edit"
+        element={<CustomerForm />}
+    />
 
     <Route
-    path="customers/:customerId"
-    element={<CustomerDetails />}
-/>
+        path="customers/:customerId"
+        element={<CustomerDetails />}
+    />
+
+    <Route
+        path="staff"
+        element={<StaffManagement />}
+    />
+
+    <Route
+        path="staff/:staffId"
+        element={<StaffDetails />}
+    />
+
     <Route
         path="jobs"
         element={<h2>Job Management</h2>}
@@ -213,10 +177,9 @@ export default function AppRoutes() {
         path="profile"
         element={<StaffProfile />}
     />
+</Route>
 
-    </Route>
-
-      <Route
+<Route
     path="/admin"
     element={
         <ProtectedRoute>
@@ -224,7 +187,6 @@ export default function AppRoutes() {
         </ProtectedRoute>
     }
 >
-
     <Route
         index
         element={<Dashboard />}
@@ -235,22 +197,30 @@ export default function AppRoutes() {
         element={<CustomerManagement />}
     />
 
-
-<Route
-    path="customers/create"
-    element={<CustomerForm />}
-/>
+    <Route
+        path="customers/create"
+        element={<CustomerForm />}
+    />
 
     <Route
-    path="customers/:customerId/edit"
-    element={<CustomerForm />}
-/>
-
+        path="customers/:customerId/edit"
+        element={<CustomerForm />}
+    />
 
     <Route
-    path="customers/:customerId"
-    element={<CustomerDetails />}
-/>
+        path="customers/:customerId"
+        element={<CustomerDetails />}
+    />
+
+    <Route
+        path="staff"
+        element={<StaffManagement />}
+    />
+
+    <Route
+        path="staff/:staffId"
+        element={<StaffDetails />}
+    />
 
     <Route
         path="jobs"
@@ -261,10 +231,9 @@ export default function AppRoutes() {
         path="profile"
         element={<StaffProfile />}
     />
+</Route>
 
-    </Route>
-
-      <Route
+ <Route
     path="/super-admin"
     element={
         <ProtectedRoute>
@@ -272,7 +241,6 @@ export default function AppRoutes() {
         </ProtectedRoute>
     }
 >
-
     <Route
         index
         element={<Dashboard />}
@@ -283,22 +251,30 @@ export default function AppRoutes() {
         element={<CustomerManagement />}
     />
 
-
-<Route
-    path="customers/create"
-    element={<CustomerForm />}
-/>
+    <Route
+        path="customers/create"
+        element={<CustomerForm />}
+    />
 
     <Route
-    path="customers/:customerId/edit"
-    element={<CustomerForm />}
-/>
+        path="customers/:customerId/edit"
+        element={<CustomerForm />}
+    />
 
+    <Route
+        path="customers/:customerId"
+        element={<CustomerDetails />}
+    />
 
-  <Route
-    path="customers/:customerId"
-    element={<CustomerDetails />}
-/>
+    <Route
+        path="staff"
+        element={<StaffManagement />}
+    />
+
+    <Route
+        path="staff/:staffId"
+        element={<StaffDetails />}
+    />
 
     <Route
         path="jobs"
@@ -309,8 +285,7 @@ export default function AppRoutes() {
         path="profile"
         element={<StaffProfile />}
     />
-
-    </Route>
+</Route>
 
       </Routes>
 
