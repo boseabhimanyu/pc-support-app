@@ -57,3 +57,39 @@ export async function searchCustomers(
 
     return response.data;
 }
+
+export async function createCustomer(
+    data: Omit<CustomerSummary, "id">,
+): Promise<CustomerSummary> {
+
+    const response = await api.post<CustomerSummary>(
+        "/customers",
+        data,
+    );
+
+    return response.data;
+}
+
+export async function updateCustomer(
+    customerId: string,
+    data: Omit<CustomerSummary, "id">,
+): Promise<CustomerSummary> {
+
+    const response = await api.patch<CustomerSummary>(
+        `/customers/${customerId}`,
+        data,
+    );
+
+    return response.data;
+}
+
+export async function fetchCustomer(
+    customerId: string,
+): Promise<CustomerSummary> {
+
+    const response = await api.get<CustomerSummary>(
+        `/customers/${customerId}`,
+    );
+
+    return response.data;
+}

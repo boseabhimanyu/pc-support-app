@@ -13,6 +13,7 @@ import Dashboard from "../features/dashboard/Dashboard";
 import StaffProfile from "../features/profile/StaffProfile";
 import CustomerManagement from "../features/customer/CustomerManagement";
 import CustomerDetails    from "../features/customer/CustomerDetails";
+import CustomerForm    from "../features/customer/CustomerForm";
 
 export default function AppRoutes() {
   return (
@@ -96,6 +97,16 @@ export default function AppRoutes() {
     />
 
     <Route
+    path="customers/create"
+    element={<CustomerForm />}
+/>
+
+      <Route
+    path="customers/:customerId/edit"
+    element={<CustomerForm />}
+/>
+
+    <Route
     path="customers/:customerId"
     element={<CustomerDetails />}
 />
@@ -131,10 +142,20 @@ export default function AppRoutes() {
         element={<CustomerManagement />}
     />
 
-  <Route
-    path="customers/:customerId"
-    element={<CustomerDetails />}
-/>
+
+    <Route
+        path="customers/create"
+        element={<CustomerForm />}
+    />
+          <Route
+        path="customers/:customerId/edit"
+        element={<CustomerForm />}
+    />
+
+      <Route
+        path="customers/:customerId"
+        element={<CustomerDetails />}
+    />
 
     <Route
         path="jobs"
@@ -166,6 +187,18 @@ export default function AppRoutes() {
         path="customers"
         element={<CustomerManagement />}
     />
+
+
+    <Route
+    path="customers/create"
+    element={<CustomerForm />}
+/>
+
+      <Route
+    path="customers/:customerId/edit"
+    element={<CustomerForm />}
+/>
+
 
     <Route
     path="customers/:customerId"
@@ -202,6 +235,18 @@ export default function AppRoutes() {
         element={<CustomerManagement />}
     />
 
+
+<Route
+    path="customers/create"
+    element={<CustomerForm />}
+/>
+
+    <Route
+    path="customers/:customerId/edit"
+    element={<CustomerForm />}
+/>
+
+
     <Route
     path="customers/:customerId"
     element={<CustomerDetails />}
@@ -237,6 +282,18 @@ export default function AppRoutes() {
         path="customers"
         element={<CustomerManagement />}
     />
+
+
+<Route
+    path="customers/create"
+    element={<CustomerForm />}
+/>
+
+    <Route
+    path="customers/:customerId/edit"
+    element={<CustomerForm />}
+/>
+
 
   <Route
     path="customers/:customerId"

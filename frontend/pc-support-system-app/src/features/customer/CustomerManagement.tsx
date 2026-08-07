@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
     Alert,
     Button,
@@ -89,7 +90,12 @@ export default function CustomerManagement() {
             <h2 className="mb-4">
                 Customer Management
             </h2>
-
+                <Button
+    className="mb-3"
+    onClick={() => navigate("create")}
+>
+    Create Customer
+</Button>
             <Card>
 
                 <Card.Body>

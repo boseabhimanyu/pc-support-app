@@ -7,6 +7,8 @@ import {
     Spinner,
 } from "react-bootstrap";
 import { useParams } from "react-router-dom";
+import { Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 import {api} from "../../app/api";
 
@@ -19,6 +21,8 @@ type Customer = {
 };
 
 export default function CustomerDetails() {
+
+    const navigate = useNavigate();
 
     const { customerId } = useParams();
 
@@ -102,9 +106,21 @@ export default function CustomerDetails() {
 
         <>
 
-            <h2 className="mb-4">
-                Customer Profile
-            </h2>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+
+    <h2 className="mb-0">
+        Customer Profile
+    </h2>
+
+    <Button
+        onClick={() =>
+            navigate("edit")
+        }
+    >
+        Edit
+    </Button>
+
+</div>
 
             <Card>
 
