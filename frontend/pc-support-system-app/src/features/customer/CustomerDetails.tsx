@@ -5,12 +5,23 @@ import {
     Col,
     Row,
     Spinner,
+    Form
 } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-
+import { useAuth } from "../auth/hooks/useAuth";
+import { canEditCustomer, canResetCustomerPassword } from "../../shared/utils/permissions";
 import {api} from "../../app/api";
+
+
+
+
+import {
+    resetCustomerPassword,
+} from "./services/customerApi";
+
+
 
 type Customer = {
     id: string;
@@ -21,6 +32,23 @@ type Customer = {
 };
 
 export default function CustomerDetails() {
+
+    const [showResetBox, setShowResetBox] =
+    useState(false);
+
+const [newPassword, setNewPassword] =
+    useState("");
+
+const [showPassword, setShowPassword] =
+    useState(false);
+
+const [passwordMessage, setPasswordMessage] =
+    useState("");
+
+    const { user } = useAuth();
+
+   const allowEdit =
+    canEditCustomer(user);
 
     const navigate = useNavigate();
 
@@ -102,23 +130,149 @@ export default function CustomerDetails() {
         return null;
     }
 
+    async function handlePasswordReset() {
+
+    if (!customerId || !newPassword.trim()) {
+        return;
+    }
+
+    try {
+
+        await resetCustomerPassword(
+            customerId,
+            newPassword,
+        );
+
+        setPasswordMessage(
+            "Password reset successfully.",
+        );
+
+        setNewPassword("");
+
+    } catch (error) {
+
+        console.error(error);
+
+        setPasswordMessage(
+            "Password must contain at least 8 characters, one uppercase letter, one number and one special character.",
+        );
+
+    }
+
+}
+
     return (
 
         <>
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
+<div className="d-flex justify-content-between align-items-center mb-4">
 
     <h2 className="mb-0">
         Customer Profile
     </h2>
 
+    {allowEdit && (
+
+        <div className="d-flex gap-2">
+
+            <Button
+                onClick={() =>
+                    navigate("edit")
+                }
+            >
+                Edit
+            </Button>
+
+
+{canResetCustomerPassword(user) && (
+
     <Button
+        variant="warning"
         onClick={() =>
-            navigate("edit")
+            setShowResetBox(
+                !showResetBox,
+            )
         }
     >
-        Edit
+        Reset Password
     </Button>
+
+)}
+
+        </div>
+
+    )}
+
+    {showResetBox && (
+
+    <Card className="mt-3">
+
+        <Card.Body>
+
+            <Card.Title>
+                Reset Customer Password
+            </Card.Title>
+
+
+            <div className="d-flex gap-2">
+
+                <Form.Control
+                    type={
+                        showPassword
+                            ? "text"
+                            : "password"
+                    }
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) =>
+                        setNewPassword(
+                            e.target.value,
+                        )
+                    }
+                />
+
+
+                <Button
+                    variant="secondary"
+                    onClick={() =>
+                        setShowPassword(
+                            !showPassword,
+                        )
+                    }
+                >
+                    {showPassword
+                        ? "Hide"
+                        : "Show"}
+                </Button>
+
+
+                <Button
+                    onClick={
+                        handlePasswordReset
+                    }
+                >
+                    Save
+                </Button>
+
+            </div>
+
+
+            {passwordMessage && (
+
+                <Alert
+                    className="mt-3"
+                    variant="info"
+                >
+                    {passwordMessage}
+                </Alert>
+
+            )}
+
+        </Card.Body>
+
+    </Card>
+
+)}
 
 </div>
 

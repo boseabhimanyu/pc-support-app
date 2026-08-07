@@ -12,13 +12,22 @@ export interface RegisterRequest {
   confirmPassword: string;
 }
 
+export type UserRole =
+    | "customer"
+    | "receptionist"
+    | "technician"
+    | "head_technician"
+    | "admin"
+    | "super_admin";
+
+
 export interface UserResponse {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
-    role: string;
+    role: UserRole;
     state: string;
 }
 

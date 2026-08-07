@@ -93,3 +93,17 @@ export async function fetchCustomer(
 
     return response.data;
 }
+
+export async function resetCustomerPassword(
+    customerId: string,
+    password: string,
+): Promise<void> {
+
+    await api.patch(
+        `/customers/${customerId}/password`,
+        {
+            password,
+        },
+    );
+
+}
