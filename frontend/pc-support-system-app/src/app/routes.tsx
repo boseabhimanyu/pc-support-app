@@ -11,6 +11,8 @@ import StaffLayout from "../layouts/StaffLayout";
 import Jobs from "../features/customer/pages/Jobs";
 import Dashboard from "../features/dashboard/Dashboard";
 import StaffProfile from "../features/profile/StaffProfile";
+import CustomerManagement from "../features/customer/CustomerManagement";
+import CustomerDetails    from "../features/customer/CustomerDetails";
 
 export default function AppRoutes() {
   return (
@@ -90,8 +92,13 @@ export default function AppRoutes() {
 
     <Route
         path="customers"
-        element={<h2>Customer Management</h2>}
+        element={<CustomerManagement />}
     />
+
+    <Route
+    path="customers/:customerId"
+    element={<CustomerDetails />}
+/>
 
     <Route
         path="jobs"
@@ -121,8 +128,13 @@ export default function AppRoutes() {
 
     <Route
         path="customers"
-        element={<h2>Customer Management</h2>}
+        element={<CustomerManagement />}
     />
+
+  <Route
+    path="customers/:customerId"
+    element={<CustomerDetails />}
+/>
 
     <Route
         path="jobs"
@@ -152,9 +164,13 @@ export default function AppRoutes() {
 
     <Route
         path="customers"
-        element={<h2>Customer Management</h2>}
+        element={<CustomerManagement />}
     />
 
+    <Route
+    path="customers/:customerId"
+    element={<CustomerDetails />}
+/>
     <Route
         path="jobs"
         element={<h2>Job Management</h2>}
@@ -183,8 +199,13 @@ export default function AppRoutes() {
 
     <Route
         path="customers"
-        element={<h2>Customer Management</h2>}
+        element={<CustomerManagement />}
     />
+
+    <Route
+    path="customers/:customerId"
+    element={<CustomerDetails />}
+/>
 
     <Route
         path="jobs"
@@ -214,8 +235,13 @@ export default function AppRoutes() {
 
     <Route
         path="customers"
-        element={<h2>Customer Management</h2>}
+        element={<CustomerManagement />}
     />
+
+  <Route
+    path="customers/:customerId"
+    element={<CustomerDetails />}
+/>
 
     <Route
         path="jobs"

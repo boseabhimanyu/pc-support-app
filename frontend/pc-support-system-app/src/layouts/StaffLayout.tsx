@@ -21,41 +21,45 @@ export default function StaffLayout() {
 
     return (
 
-         <div
-        className="d-flex"
-        style={{
-            minHeight: "100vh",
-            width: "100%",
-        }}
-    >
-
-        <Sidebar items={menuItems} />
-
         <div
-            className="d-flex flex-column"
             style={{
-                flex: 1,
-                minWidth: 0,
+                minHeight: "100vh",
+                width: "100%",
             }}
         >
 
+            {/* Top bar */}
+
             <Header />
 
-            <main
+            {/* Sidebar + page content */}
+
+            <div
+                className="d-flex"
                 style={{
-                    flex: 1,
-                    width: "100%",
-                    padding: "24px",
+                    minHeight: "calc(100vh - 56px)",
                 }}
             >
 
-                <Outlet />
+                <Sidebar items={menuItems} />
 
-            </main>
+                <main
+                style={{
+                    flex: 1,
+                    minWidth: 0,
+                    width: 0,
+                    padding: "24px",
+                }}
+>
+
+                    <Outlet />
+
+                </main>
+
+            </div>
 
         </div>
 
-    </div>
-
     );
+
 }

@@ -33,3 +33,27 @@ export const customerApi = {
     },
 
 };
+
+export interface CustomerSummary {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+}
+
+export async function searchCustomers(
+    query: string,
+): Promise<CustomerSummary[]> {
+
+    const response = await api.get<CustomerSummary[]>(
+        "/customers-search",
+        {
+            params: {
+                q: query,
+            },
+        },
+    );
+
+    return response.data;
+}
