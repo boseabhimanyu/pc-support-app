@@ -114,3 +114,12 @@ export async function fetchAssignedJobs() {
     return response.data;
 }
 
+export async function fetchJobByNumber(
+    jobNumber: string,
+) {
+    const response = await api.get(
+        `/jobs/number/${jobNumber}`,
+    );
+
+    return response.data;
+}

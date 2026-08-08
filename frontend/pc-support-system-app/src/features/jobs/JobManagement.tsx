@@ -483,7 +483,7 @@ useEffect(() => {
                                                             variant="outline-primary"
                                                             onClick={() =>
                                                                 navigate(
-                                                                    `jobs/${job.id}`,
+                                                                    `${job.jobNumber}`,
                                                                 )
                                                             }
                                                         >
