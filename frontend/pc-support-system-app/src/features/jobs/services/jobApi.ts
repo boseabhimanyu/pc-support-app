@@ -123,3 +123,15 @@ export async function fetchJobByNumber(
 
     return response.data;
 }
+export async function searchJobs(query: string) {
+    const response = await api.get(
+        `/jobs/search`,
+        {
+            params: {
+                q: query,
+            },
+        },
+    );
+
+    return response.data;
+}

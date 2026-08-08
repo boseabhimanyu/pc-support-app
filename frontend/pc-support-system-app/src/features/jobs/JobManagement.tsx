@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
     Alert,
@@ -9,7 +8,7 @@ import {
     Spinner,
     Table,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../auth/hooks/useAuth";
 
@@ -19,6 +18,7 @@ import {
     fetchOpenJobs,
     fetchResumedJobs,
     fetchWaitingCustomerJobs,
+    searchJobs,
 } from "../jobs/services/jobApi";
 
 import type {
@@ -74,7 +74,21 @@ function formatStatus(status: string) {
 
     return statusLabels[status] ?? status;
 }
+function fullName(person?: {
+    firstName: string;
+    lastName: string;
+} | null) {
+    if (!person) {
+        return "--";
+    }
 
+    return [
+        person.firstName,
+        person.lastName,
+    ]
+        .filter(Boolean)
+        .join(" ");
+}
 function isAssignedQueue(queue: QueueType) {
     return (
         queue === "assigned" ||
@@ -87,12 +101,69 @@ function isAssignedQueue(queue: QueueType) {
 export default function JobManagement() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] =
+    useSearchParams();
+
+    const [searchJobNumber, setSearchJobNumber] =
+        useState(searchParams.get("search") ?? "");
+
+    const [searchedJobs, setSearchedJobs] =
+        useState<Job[]>([]);
+
+    const [searchLoading, setSearchLoading] =
+        useState(false);
+
+    const [searchError, setSearchError] =
+        useState("");
+
+           useEffect(() => {
+    const savedSearch =
+        searchParams.get("search");
+
+    if (savedSearch === null || savedSearch.trim() === "") {
+        return;
+    }
+
+    const query = savedSearch.trim();
+
+    setSearchJobNumber(query);
+
+    async function restoreSearch() {
+        try {
+            setSearchLoading(true);
+            setSearchError("");
+
+            const response =
+                await searchJobs(query);
+
+            setSearchedJobs(
+                response.jobs ?? [],
+            );
+        } catch (err: any) {
+            console.error(
+                "Search restore error:",
+                err.response?.data,
+            );
+
+            setSearchError(
+                err.response?.data?.error ??
+                    err.response?.data?.message ??
+                    "Unable to restore search.",
+            );
+
+            setSearchedJobs([]);
+        } finally {
+            setSearchLoading(false);
+        }
+    }
+
+    restoreSearch();
+}, []); 
 
     const canManageQueues =
-    user?.role === "head_technician" ||
-    user?.role === "admin" ||
-    user?.role === "super_admin";   
-
+        user?.role === "head_technician" ||
+        user?.role === "admin" ||
+        user?.role === "super_admin";
 
     const [counts, setCounts] = useState<
         Record<QueueType, number>
@@ -116,6 +187,45 @@ export default function JobManagement() {
         useState(false);
 
     const [error, setError] = useState("");
+
+    async function handleSearchJob() {
+    const value = searchJobNumber.trim();
+
+    if (!value) {
+        setSearchError("Please enter a job number.");
+        setSearchedJobs([]);
+        setSearchParams({});
+        return;
+    }
+
+    try {
+        setSearchLoading(true);
+        setSearchError("");
+        setSearchedJobs([]);
+
+        setSearchParams({
+            search: value,
+        });
+
+        const response = await searchJobs(value);
+
+        setSearchedJobs(response.jobs ?? []);
+    } catch (err: any) {
+        console.error(
+            "Job search error:",
+            err.response?.data,
+        );
+
+        setSearchError(
+            err.response?.data?.error ??
+                err.response?.data?.message ??
+                "Unable to search jobs.",
+        );
+    } finally {
+        setSearchLoading(false);
+    }
+}
+
 
     /*
      * Get the five queue responses.
@@ -276,6 +386,96 @@ useEffect(() => {
                     {error}
                 </Alert>
             )}
+            <Card className="mb-4">
+    <Card.Body>
+        <Card.Title>
+            Search Job
+        </Card.Title>
+
+        <div className="d-flex gap-2">
+            <input
+                type="text"
+                className="form-control"
+                placeholder="Enter job number"
+                value={searchJobNumber}
+                disabled={searchLoading}
+                onChange={(event) =>
+                    setSearchJobNumber(
+                        event.target.value,
+                    )
+                }
+                onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                        handleSearchJob();
+                    }
+                }}
+            />
+
+            <Button
+                variant="primary"
+                disabled={searchLoading}
+                onClick={handleSearchJob}
+            >
+                {searchLoading ? (
+                    <Spinner
+                        animation="border"
+                        size="sm"
+                    />
+                ) : (
+                    "Search"
+                )}
+            </Button>
+        </div>
+
+        {searchError && (
+            <Alert
+                variant="danger"
+                className="mt-3 mb-0"
+            >
+                {searchError}
+            </Alert>
+        )}
+
+{searchedJobs.length > 0 && (
+    <div className="mt-3">
+        {searchedJobs.map((job) => (
+            <Card
+                key={job.id}
+                className="mb-2"
+            >
+                <Card.Body>
+                    <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div className="fw-semibold">
+                                {job.jobNumber}
+                            </div>
+
+                            <div className="text-muted">
+                                {fullName(job.customer)}
+                            </div>
+
+                            <div className="small text-muted">
+                                {formatStatus(job.status)}
+                            </div>
+                        </div>
+
+                        <Button
+                            size="sm"
+                            variant="outline-primary"
+                            onClick={() =>
+                                navigate(job.jobNumber)
+                            }
+                        >
+                            View Job
+                        </Button>
+                    </div>
+                </Card.Body>
+            </Card>
+        ))}
+    </div>
+)}
+    </Card.Body>
+</Card>
             {canManageQueues && (
             <Row className="g-3 mb-4">
                 {QUEUES.map((queue) => (
