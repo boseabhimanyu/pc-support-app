@@ -19,6 +19,7 @@ import StaffDetails from "../features/staff/StaffDetails";
 import DeviceForm from "../features/devices/DeviceForm";
 import DeviceDetails from "../features/devices/DeviceDetails";
 import AuditLogs from "../features/auditlogs/AuditLogs";
+import JobManagement from "../features/jobs/JobManagement";
 
 export default function AppRoutes() {
   return (
@@ -117,9 +118,9 @@ export default function AppRoutes() {
 />
 
     <Route
-        path="jobs"
-        element={<h2>Job Management</h2>}
-    />
+    path="jobs"
+    element={<JobManagement />}
+/>
 
     <Route
         path="profile"
@@ -167,9 +168,9 @@ export default function AppRoutes() {
     />
 
     <Route
-        path="jobs"
-        element={<h2>Job Management</h2>}
-    />
+    path="jobs"
+    element={<JobManagement />}
+/>
 
     <Route
         path="profile"
@@ -231,10 +232,10 @@ export default function AppRoutes() {
         element={<StaffDetails />}
     />
 
-    <Route
-        path="jobs"
-        element={<h2>Job Management</h2>}
-    />
+   <Route
+    path="jobs"
+    element={<JobManagement />}
+/>
 
     <Route
         path="profile"
@@ -301,10 +302,10 @@ export default function AppRoutes() {
         element={<StaffDetails />}
     />
 
-    <Route
-        path="jobs"
-        element={<h2>Job Management</h2>}
-    />
+   <Route
+    path="jobs"
+    element={<JobManagement />}
+/>
 
     <Route
         path="profile"
@@ -376,9 +377,9 @@ export default function AppRoutes() {
     />
 
     <Route
-        path="jobs"
-        element={<h2>Job Management</h2>}
-    />
+    path="jobs"
+    element={<JobManagement />}
+/>
 
     <Route
         path="profile"
