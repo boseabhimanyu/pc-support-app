@@ -18,6 +18,7 @@ import StaffManagement from "../features/staff/StaffManagement";
 import StaffDetails from "../features/staff/StaffDetails";
 import DeviceForm from "../features/devices/DeviceForm";
 import DeviceDetails from "../features/devices/DeviceDetails";
+import AuditLogs from "../features/auditlogs/AuditLogs";
 
 export default function AppRoutes() {
   return (
@@ -324,6 +325,10 @@ export default function AppRoutes() {
         path="customers/:customerId/devices/:deviceId/edit"
         element={<DeviceForm />}
     />
+    <Route
+    path="audit-logs"
+    element={<AuditLogs />}
+/>
 
 </Route>
 
@@ -394,6 +399,11 @@ export default function AppRoutes() {
             path="customers/:customerId/devices/:deviceId/edit"
             element={<DeviceForm />}
         />
+
+        <Route
+    path="audit-logs"
+    element={<AuditLogs />}
+/>
     </Route>
 
         </Routes>

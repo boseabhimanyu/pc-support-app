@@ -9,7 +9,7 @@ import {
 } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useAuth";
 import { canEditCustomer, canResetCustomerPassword } from "../../shared/utils/permissions";
 import {api} from "../../app/api";

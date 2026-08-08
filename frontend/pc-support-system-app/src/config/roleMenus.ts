@@ -109,6 +109,10 @@ export const roleMenus: Record<string, MenuItem[]> = {
             label: "My Profile",
             path: "/admin/profile",
         },
+        {
+            label: "Audit Logs",
+            path: "/admin/audit-logs",
+        },
 
     ],
 
@@ -137,6 +141,10 @@ export const roleMenus: Record<string, MenuItem[]> = {
         {
             label: "My Profile",
             path: "/super-admin/profile",
+        },
+        {
+            label: "Audit Logs",
+            path: "/super-admin/audit-logs",
         },
 
     ],
