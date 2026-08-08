@@ -16,6 +16,8 @@ import CustomerDetails    from "../features/customer/CustomerDetails";
 import CustomerForm    from "../features/customer/CustomerForm";
 import StaffManagement from "../features/staff/StaffManagement";
 import StaffDetails from "../features/staff/StaffDetails";
+import DeviceForm from "../features/devices/DeviceForm";
+import DeviceDetails from "../features/devices/DeviceDetails";
 
 export default function AppRoutes() {
   return (
@@ -123,6 +125,21 @@ export default function AppRoutes() {
         element={<StaffProfile />}
     />
 
+            <Route
+            path="customers/:customerId/devices/create"
+            element={<DeviceForm />}
+        />
+
+        <Route
+            path="customers/:customerId/devices/:deviceId"
+            element={<DeviceDetails />}
+        />
+
+        <Route
+            path="customers/:customerId/devices/:deviceId/edit"
+            element={<DeviceForm />}
+        />
+
     </Route>
 
 <Route
@@ -139,6 +156,16 @@ export default function AppRoutes() {
     />
 
     <Route
+        path="customers"
+        element={<CustomerManagement />}
+    />
+
+    <Route
+        path="customers/:customerId"
+        element={<CustomerDetails />}
+    />
+
+    <Route
         path="jobs"
         element={<h2>Job Management</h2>}
     />
@@ -147,6 +174,17 @@ export default function AppRoutes() {
         path="profile"
         element={<StaffProfile />}
     />
+
+    <Route
+    path="customers/:customerId/devices/:deviceId"
+    element={<DeviceDetails />}
+/>
+
+<Route
+    path="customers/:customerId/devices/:deviceId/edit"
+    element={<DeviceForm />}
+/>
+
 </Route>
 
 <Route
@@ -201,6 +239,22 @@ export default function AppRoutes() {
         path="profile"
         element={<StaffProfile />}
     />
+
+        <Route
+            path="customers/:customerId/devices/create"
+            element={<DeviceForm />}
+        />
+
+        <Route
+            path="customers/:customerId/devices/:deviceId"
+            element={<DeviceDetails />}
+        />
+
+        <Route
+            path="customers/:customerId/devices/:deviceId/edit"
+            element={<DeviceForm />}
+        />
+
 </Route>
 
 <Route
@@ -255,6 +309,22 @@ export default function AppRoutes() {
         path="profile"
         element={<StaffProfile />}
     />
+
+    <Route
+        path="customers/:customerId/devices/create"
+        element={<DeviceForm />}
+    />
+
+    <Route
+        path="customers/:customerId/devices/:deviceId"
+        element={<DeviceDetails />}
+    />
+
+    <Route
+        path="customers/:customerId/devices/:deviceId/edit"
+        element={<DeviceForm />}
+    />
+
 </Route>
 
  <Route
@@ -309,9 +379,24 @@ export default function AppRoutes() {
         path="profile"
         element={<StaffProfile />}
     />
-</Route>
 
-      </Routes>
+        <Route
+            path="customers/:customerId/devices/create"
+            element={<DeviceForm />}
+        />
+
+        <Route
+            path="customers/:customerId/devices/:deviceId"
+            element={<DeviceDetails />}
+        />
+
+        <Route
+            path="customers/:customerId/devices/:deviceId/edit"
+            element={<DeviceForm />}
+        />
+    </Route>
+
+        </Routes>
 
     </BrowserRouter>
   );

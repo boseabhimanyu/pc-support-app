@@ -11,6 +11,7 @@ export function canEditCustomer(
     return [
         "receptionist",
         "admin",
+        "head_technician"
     ].includes(user.role);
 
 }

@@ -9,11 +9,17 @@ import {
 } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useAuth";
 import { canEditCustomer, canResetCustomerPassword } from "../../shared/utils/permissions";
 import {api} from "../../app/api";
+import {
+    fetchCustomerDevices,
+} from "../devices/deviceApi";
 
+import type {
+    Device,
+} from "../devices/types";
 
 
 
@@ -63,6 +69,15 @@ const [passwordMessage, setPasswordMessage] =
     const [error, setError] =
         useState("");
 
+    const [devices, setDevices] =
+    useState<Device[]>([]);
+
+const [loadingDevices, setLoadingDevices] =
+    useState(false);
+
+const [deviceError, setDeviceError] =
+    useState("");
+
     useEffect(() => {
 
         async function loadCustomer() {
@@ -103,6 +118,49 @@ const [passwordMessage, setPasswordMessage] =
         loadCustomer();
 
     }, [customerId]);
+
+    useEffect(() => {
+
+    async function loadDevices() {
+
+        if (!customerId) {
+            return;
+        }
+
+        try {
+
+            setLoadingDevices(true);
+            setDeviceError("");
+
+            const response =
+                await fetchCustomerDevices(
+                    customerId,
+                );
+
+            setDevices(response);
+
+        } catch (err) {
+
+            console.error(
+                "Customer devices error:",
+                err,
+            );
+
+            setDeviceError(
+                "Unable to load customer devices.",
+            );
+
+        } finally {
+
+            setLoadingDevices(false);
+
+        }
+
+    }
+
+    loadDevices();
+
+}, [customerId]);
 
     if (loading) {
 
@@ -339,7 +397,105 @@ const [passwordMessage, setPasswordMessage] =
                 </Card.Body>
 
             </Card>
+            <Card className="mt-4">
 
+    <Card.Body>
+
+       
+<div className="d-flex justify-content-between align-items-center mb-3">
+
+    <Card.Title className="mb-0">
+        Devices
+    </Card.Title>
+
+    {allowEdit && (
+    <Button
+        onClick={() =>
+            navigate("devices/create", {
+                state: {
+                    customerName: `${customer.firstName} ${customer.lastName}`,
+                },
+            })
+        }
+    >
+        Add Device
+    </Button>
+)}
+
+</div>
+
+
+
+        {loadingDevices && (
+            <div className="text-center p-3">
+                <Spinner size="sm" />
+            </div>
+        )}
+
+        {deviceError && (
+            <Alert variant="danger">
+                {deviceError}
+            </Alert>
+        )}
+
+        {!loadingDevices &&
+            !deviceError &&
+            devices.length === 0 && (
+                <Alert variant="info">
+                    No devices registered for this customer.
+                </Alert>
+            )}
+
+        {!loadingDevices &&
+            devices.length > 0 && (
+
+                <div className="table-responsive">
+
+                    <table className="table table-hover">
+
+                       <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Brand</th>
+                                    <th>Model</th>
+                                    <th>Serial Number</th>
+                                    <th>Condition</th>
+                                    <th>Actions</th>
+                                </tr>
+                        </thead>
+
+                        <tbody>
+                            {devices.map((device) => (
+                                <tr key={device.id}>
+                                    <td>{device.type}</td>
+                                    <td>{device.brand || "--"}</td>
+                                    <td>{device.model || "--"}</td>
+                                    <td>{device.serialNumber || "--"}</td>
+                                    <td>{device.condition}</td>
+                                    <td>
+                                        <Button
+                                            size="sm"
+                                            variant="outline-primary"
+                                            onClick={() =>
+                                                navigate(`devices/${device.id}`)
+                                            }
+                                        >
+                                            View
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            )}
+
+    </Card.Body>
+
+</Card>
         </>
 
     );
