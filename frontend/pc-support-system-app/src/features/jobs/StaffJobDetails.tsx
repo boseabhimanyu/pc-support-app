@@ -9,16 +9,19 @@ import {
     Row,
     Spinner,
 } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+    useNavigate,
+    useParams,
+} from "react-router-dom";
+
+import { useAuth } from "../auth/hooks/useAuth";
 
 import {
     fetchJobByNumber,
     addJobNote,
 } from "./services/jobApi";
 
-import type {
-    Job,
-} from "./jobTypes";
+import type { Job } from "./jobTypes";
 
 function formatStatus(status: string) {
     const statusLabels: Record<string, string> = {
@@ -49,10 +52,12 @@ function formatDate(date: string) {
     return new Date(date).toLocaleString();
 }
 
-function fullName(person?: {
-    firstName: string;
-    lastName: string;
-} | null) {
+function fullName(
+    person?: {
+        firstName: string;
+        lastName: string;
+    } | null,
+) {
     if (!person) {
         return "--";
     }
@@ -70,9 +75,10 @@ export default function StaffJobDetails() {
 
     const navigate = useNavigate();
 
-    const [job, setJob] = useState<Job | null>(
-        null,
-    );
+    const { user } = useAuth();
+
+    const [job, setJob] =
+        useState<Job | null>(null);
 
     const [loading, setLoading] =
         useState(true);
@@ -80,87 +86,118 @@ export default function StaffJobDetails() {
     const [savingNote, setSavingNote] =
         useState(false);
 
-    const [note, setNote] = useState("");
+    const [note, setNote] =
+        useState("");
 
-    const [error, setError] = useState("");
+    const [error, setError] =
+        useState("");
 
     const [noteError, setNoteError] =
         useState("");
 
+    /*
+     * Note permissions:
+     *
+     * Receptionists can add notes to any job.
+     *
+     * Technicians can add notes only when
+     * they are assigned to this job.
+     *
+     * Head technicians can add notes only
+     * when they are assigned to this job.
+     *
+     * Admins and super admins can view notes
+     * but cannot add notes.
+     */
+    const canAddNote =
+        user?.role === "receptionist" ||
+        (
+            user?.role === "technician" &&
+            job?.assignedTo?.id === user.id
+        ) ||
+        (
+            user?.role === "head_technician" &&
+            job?.assignedTo?.id === user.id
+        );
+
     async function loadJob() {
-    if (!jobNumber) {
-        setError("Job number is missing.");
-        setLoading(false);
-        return;
+        if (!jobNumber) {
+            setError("Job number is missing.");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError("");
+
+            const response =
+                await fetchJobByNumber(
+                    jobNumber,
+                );
+
+            setJob(response);
+        } catch (err: any) {
+            console.error(
+                "Job details error:",
+                err.response?.data,
+            );
+
+            setError(
+                err.response?.data?.error ??
+                    err.response?.data?.message ??
+                    "Unable to load job.",
+            );
+        } finally {
+            setLoading(false);
+        }
     }
-
-    try {
-        setLoading(true);
-        setError("");
-
-        const response =
-            await fetchJobByNumber(jobNumber);
-
-        setJob(response);
-    } catch (err: any) {
-        console.error(
-            "Job details error:",
-            err.response?.data,
-        );
-
-        setError(
-            err.response?.data?.error ??
-                err.response?.data?.message ??
-                "Unable to load job.",
-        );
-    } finally {
-        setLoading(false);
-    }
-}
-
 
     useEffect(() => {
-    loadJob();
-}, [jobNumber]);
+        loadJob();
+    }, [jobNumber]);
 
     async function handleAddNote() {
-    if (!job) {
-        return;
+        if (!job) {
+            return;
+        }
+
+        const trimmedNote =
+            note.trim();
+
+        if (!trimmedNote) {
+            setNoteError(
+                "Please enter a note.",
+            );
+            return;
+        }
+
+        try {
+            setSavingNote(true);
+            setNoteError("");
+
+            await addJobNote(job.id, {
+                note: trimmedNote,
+            });
+
+            setNote("");
+
+            await loadJob();
+        } catch (err: any) {
+            console.error(
+                "Add job note error:",
+                err.response?.data,
+            );
+
+            setNoteError(
+                err.response?.data?.error ??
+                    err.response?.data?.message ??
+                    "Unable to add note.",
+            );
+        } finally {
+            setSavingNote(false);
+        }
     }
-
-    const trimmedNote = note.trim();
-
-    if (!trimmedNote) {
-        setNoteError("Please enter a note.");
-        return;
-    }
-
-    try {
-        setSavingNote(true);
-        setNoteError("");
-
-        await addJobNote(job.id, {
-            note: trimmedNote,
-        });
-
-        setNote("");
-
-        await loadJob();
-    } catch (err: any) {
-        console.error(
-            "Add job note error:",
-            err.response?.data,
-        );
-
-        setNoteError(
-            err.response?.data?.error ??
-                err.response?.data?.message ??
-                "Unable to add note.",
-        );
-    } finally {
-        setSavingNote(false);
-    }
-}
 
     if (loading) {
         return (
@@ -377,98 +414,122 @@ export default function StaffJobDetails() {
                                 Notes
                             </Card.Title>
 
-                            {job.notes && job.notes.length > 0 ? (
-    <div className="d-flex flex-column gap-3 mb-4">
-        {job.notes.map((jobNote) => (
-            <Card
-                key={jobNote.id}
-                className="border"
-            >
-                <Card.Body>
-                    <div className="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div className="fw-semibold">
-                                {fullName(jobNote.author)}
-                            </div>
+                            {/* Existing notes are visible to everyone */}
+                            {job.notes &&
+                            job.notes.length > 0 ? (
+                                <div className="d-flex flex-column gap-3 mb-4">
+                                    {job.notes.map(
+                                        (jobNote) => (
+                                            <Card
+                                                key={
+                                                    jobNote.id
+                                                }
+                                                className="border"
+                                            >
+                                                <Card.Body>
+                                                    <div className="d-flex justify-content-between align-items-start gap-3">
+                                                        <div>
+                                                            <div className="fw-semibold">
+                                                                {fullName(
+                                                                    jobNote.author,
+                                                                )}
+                                                            </div>
 
-                            <div className="text-muted small">
-                                {formatRole(
-                                    jobNote.author.role,
-                                )}
-                            </div>
-                        </div>
+                                                            <div className="text-muted small">
+                                                                {formatRole(
+                                                                    jobNote
+                                                                        .author
+                                                                        .role,
+                                                                )}
+                                                            </div>
+                                                        </div>
 
-                        <div className="text-muted small text-end">
-                            {formatDate(
-                                jobNote.createdAt,
-                            )}
-                        </div>
-                    </div>
+                                                        <div className="text-muted small text-end">
+                                                            {formatDate(
+                                                                jobNote.createdAt,
+                                                            )}
+                                                        </div>
+                                                    </div>
 
-                    <div className="mt-3">
-                        {jobNote.note}
-                    </div>
-                </Card.Body>
-            </Card>
-        ))}
-    </div>
-) : (
-    <Alert variant="light">
-        No notes have been added to this job.
-    </Alert>
-)}
-
-                            <hr />
-
-                            <h6 className="mb-3">
-                                Add Note
-                            </h6>
-
-                            {noteError && (
-                                <Alert variant="danger">
-                                    {noteError}
+                                                    <div className="mt-3">
+                                                        {
+                                                            jobNote.note
+                                                        }
+                                                    </div>
+                                                </Card.Body>
+                                            </Card>
+                                        ),
+                                    )}
+                                </div>
+                            ) : (
+                                <Alert variant="light">
+                                    No notes have
+                                    been added to
+                                    this job.
                                 </Alert>
                             )}
 
-                            <textarea
-                                className="form-control mb-3"
-                                rows={4}
-                                value={note}
-                                disabled={
-                                    savingNote
-                                }
-                                placeholder="Enter a note about this job..."
-                                onChange={(event) =>
-                                    setNote(
-                                        event.target
-                                            .value,
-                                    )
-                                }
-                            />
+                            {/* Only permitted users can add notes */}
+                            {canAddNote && (
+                                <>
+                                    <hr />
 
-                            <Button
-                                variant="primary"
-                                disabled={
-                                    savingNote ||
-                                    !note.trim()
-                                }
-                                onClick={
-                                    handleAddNote
-                                }
-                            >
-                                {savingNote ? (
-                                    <>
-                                        <Spinner
-                                            animation="border"
-                                            size="sm"
-                                            className="me-2"
-                                        />
-                                        Adding...
-                                    </>
-                                ) : (
-                                    "Add Note"
-                                )}
-                            </Button>
+                                    <h6 className="mb-3">
+                                        Add Note
+                                    </h6>
+
+                                    {noteError && (
+                                        <Alert variant="danger">
+                                            {
+                                                noteError
+                                            }
+                                        </Alert>
+                                    )}
+
+                                    <textarea
+                                        className="form-control mb-3"
+                                        rows={4}
+                                        value={note}
+                                        disabled={
+                                            savingNote
+                                        }
+                                        placeholder="Enter a note about this job..."
+                                        onChange={(
+                                            event,
+                                        ) =>
+                                            setNote(
+                                                event
+                                                    .target
+                                                    .value,
+                                            )
+                                        }
+                                    />
+
+                                    <Button
+                                        variant="primary"
+                                        disabled={
+                                            savingNote ||
+                                            !note.trim()
+                                        }
+                                        onClick={
+                                            handleAddNote
+                                        }
+                                    >
+                                        {savingNote ? (
+                                            <>
+                                                <Spinner
+                                                    animation="border"
+                                                    size="sm"
+                                                    className="me-2"
+                                                />
+                                                Adding...
+                                            </>
+                                        ) : (
+                                            "Add Note"
+                                        )}
+                                    </Button>
+                                </>
+                            )}
                         </Card.Body>
                     </Card>
                 </Col>
