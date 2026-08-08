@@ -38,6 +38,7 @@ type Queue = {
     title: string;
 };
 
+
 const QUEUES: Queue[] = [
     {
         key: "open",
@@ -87,10 +88,11 @@ export default function JobManagement() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const allowed =
-        user?.role === "head_technician" ||
-        user?.role === "admin" ||
-        user?.role === "super_admin";
+    const canManageQueues =
+    user?.role === "head_technician" ||
+    user?.role === "admin" ||
+    user?.role === "super_admin";   
+
 
     const [counts, setCounts] = useState<
         Record<QueueType, number>
@@ -181,13 +183,13 @@ export default function JobManagement() {
         }
     }
 
-    useEffect(() => {
-        if (!allowed) {
-            return;
-        }
+useEffect(() => {
+    if (!canManageQueues) {
+        return;
+    }
 
-        loadQueueCounts();
-    }, [allowed]);
+    loadQueueCounts();
+}, [canManageQueues]);
 
     async function loadQueue(
         queue: QueueType,
@@ -262,14 +264,6 @@ export default function JobManagement() {
             .join(" ");
     }
 
-    if (!allowed) {
-        return (
-            <Alert variant="danger">
-                You do not have permission to view
-                Job Management.
-            </Alert>
-        );
-    }
 
     return (
         <div>
@@ -282,7 +276,7 @@ export default function JobManagement() {
                     {error}
                 </Alert>
             )}
-
+            {canManageQueues && (
             <Row className="g-3 mb-4">
                 {QUEUES.map((queue) => (
                     <Col
@@ -344,8 +338,8 @@ export default function JobManagement() {
                     </Col>
                 ))}
             </Row>
-
-            {selectedQueue && (
+                )}
+            {canManageQueues && selectedQueue && (
                 <Card>
                     <Card.Body>
                         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -400,6 +394,8 @@ export default function JobManagement() {
                                     bordered
                                     hover
                                     responsive
+                                    className="align-middle"
+                                    style={{ tableLayout: "fixed", width: "100%" }}
                                 >
                                     <thead>
                                         <tr>
@@ -407,8 +403,8 @@ export default function JobManagement() {
                                                 Job Number
                                             </th>
                                             <th>
-    Customer
-</th>
+                                            Customer
+                                        </th>
                                             <th>
                                                 Device
                                             </th>
@@ -416,10 +412,10 @@ export default function JobManagement() {
                                                 Problem
                                             </th>
                                             {isAssignedQueue(selectedQueue) && (
-    <th>
-        Assigned To
-    </th>
-)}
+                                            <th>
+                                                Assigned To
+                                            </th>
+                                                )}
                                             <th>
                                                 Status
                                             </th>
@@ -448,14 +444,14 @@ export default function JobManagement() {
                                                     </td>
 
                                                         <td>
-    {customerName(job)}
-</td>
+                                            {customerName(job)}
+                                                         </td>
 
 
 
-<td>
-    {deviceName(job) || job.device.type}
-</td>
+                                                    <td>
+                                                        {deviceName(job) || job.device.type}
+                                                    </td>
 
                                                     <td>
                                                         {
@@ -463,12 +459,12 @@ export default function JobManagement() {
                                                         }
                                                     </td>
                                                             {isAssignedQueue(selectedQueue) && (
-    <td>
-        {job.assignedTo
-            ? `${job.assignedTo.firstName} ${job.assignedTo.lastName}`
-            : "--"}
-    </td>
-)}
+                                                    <td>
+                                                        {job.assignedTo
+                                                            ? `${job.assignedTo.firstName} ${job.assignedTo.lastName}`
+                                                            : "--"}
+                                                    </td>
+                                                            )}
                                                     <td>
                                                         {
                                                             formatStatus(job.status)
