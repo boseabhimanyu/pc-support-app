@@ -8,7 +8,7 @@ import {
     Form
 } from "react-bootstrap";
 import { useParams } from "react-router-dom";
-import { Button } from "react-bootstrap";
+import { Button, Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useAuth";
 import { canEditCustomer, canResetCustomerPassword } from "../../shared/utils/permissions";
@@ -28,6 +28,8 @@ import {
 } from "./services/customerApi";
 
 
+import { getJobsByCustomer } from "../jobs/services/jobApi";
+import type { JobCustomerProfile } from "../jobs/jobTypes";
 
 type Customer = {
     id: string;
@@ -39,21 +41,25 @@ type Customer = {
 
 export default function CustomerDetails() {
 
+    const [jobs, setJobs] = useState<JobCustomerProfile[]>([]);
+    const [jobsLoading, setJobsLoading] = useState(true);
+    const [jobsError, setJobsError] = useState("");
+
     const [showResetBox, setShowResetBox] =
     useState(false);
 
-const [newPassword, setNewPassword] =
-    useState("");
+    const [newPassword, setNewPassword] =
+        useState("");
 
-const [showPassword, setShowPassword] =
-    useState(false);
+    const [showPassword, setShowPassword] =
+        useState(false);
 
-const [passwordMessage, setPasswordMessage] =
-    useState("");
+    const [passwordMessage, setPasswordMessage] =
+        useState("");
 
     const { user } = useAuth();
 
-   const allowEdit =
+    const allowEdit =
     canEditCustomer(user);
 
     const navigate = useNavigate();
@@ -72,11 +78,11 @@ const [passwordMessage, setPasswordMessage] =
     const [devices, setDevices] =
     useState<Device[]>([]);
 
-const [loadingDevices, setLoadingDevices] =
-    useState(false);
+    const [loadingDevices, setLoadingDevices] =
+        useState(false);
 
-const [deviceError, setDeviceError] =
-    useState("");
+    const [deviceError, setDeviceError] =
+        useState("");
 
     useEffect(() => {
 
@@ -160,6 +166,36 @@ const [deviceError, setDeviceError] =
 
     loadDevices();
 
+}, [customerId]);
+
+
+   useEffect(() => {
+    async function loadCustomerJobs() {
+        if (!customerId) {
+            setJobsError("Customer not found.");
+            setJobsLoading(false);
+            return;
+        }
+
+        try {
+            setJobsLoading(true);
+            setJobsError("");
+
+            const response = await getJobsByCustomer(customerId);
+
+            setJobs(response.jobs);
+        } catch (error) {
+            setJobsError(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to load customer jobs.",
+            );
+        } finally {
+            setJobsLoading(false);
+        }
+    }
+
+    loadCustomerJobs();
 }, [customerId]);
 
     if (loading) {
@@ -512,7 +548,7 @@ const [deviceError, setDeviceError] =
 
 
                     </table>
-
+                        
                 </div>
 
             )}
@@ -520,6 +556,169 @@ const [deviceError, setDeviceError] =
     </Card.Body>
 
 </Card>
+
+<div className="mt-5">
+    <h4>Jobs</h4>
+
+    {jobsLoading && <p>Loading jobs...</p>}
+
+    {jobsError && (
+        <Alert variant="danger">
+            {jobsError}
+        </Alert>
+    )}
+
+    {!jobsLoading && !jobsError && (
+        <>
+            {/* Ongoing Jobs */}
+            <h5 className="mt-4">Ongoing Jobs</h5>
+
+            {jobs.filter((job) => job.status !== "closed").length === 0 ? (
+                <p className="text-muted">
+                    No ongoing jobs.
+                </p>
+            ) : (
+                <Table bordered hover responsive>
+                      
+                    <thead>
+                        <tr>
+                            <th>Job Number</th>
+                            <th>Device</th>
+                            <th>Problem</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {jobs
+                            .filter((job) => job.status !== "closed")
+                            .map((job) => (
+                                <tr key={job.id}>
+                                    <td>{job.jobNumber}</td>
+
+                                    <td>
+                                        {job.device.type}
+                                        {" - "}
+                                        {job.device.brand || "--"}
+                                        {job.device.model
+                                            ? ` ${job.device.model}`
+                                            : ""}
+                                    </td>
+
+                                    <td>
+                                        {job.problemDescription}
+                                    </td>
+
+                                    <td>{job.status}</td>
+
+                                    <td>
+                                        {new Date(
+                                            job.createdAt,
+                                        ).toLocaleDateString()}
+                                    </td>
+
+                                    <td>
+                                        <Button
+                                            size="sm"
+                                            variant="outline-primary"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/technician/jobs/${job.jobNumber}`,
+                                                )
+                                            }
+                                        >
+                                            View
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                    </tbody>
+                </Table>
+            )}
+
+            {/* Past Jobs */}
+            <h5 className="mt-5">Past Jobs</h5>
+
+            {jobs.filter((job) => job.status === "closed").length === 0 ? (
+                <p className="text-muted">
+                    No past jobs.
+                </p>
+            ) : (
+                <Table bordered hover responsive>
+
+                    <thead>
+                        <tr>
+                            <th>Job Number</th>
+                            <th>Device</th>
+                            <th>Problem</th>
+                            <th>Assigned To</th>
+                            <th>Closed</th>
+                            <th>Close Reason</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {jobs
+                            .filter((job) => job.status === "closed")
+                            .map((job) => (
+                                <tr key={job.id}>
+                                    <td>{job.jobNumber}</td>
+
+                                    <td>
+                                        {job.device.type}
+                                        {" - "}
+                                        {job.device.brand || "--"}
+                                        {job.device.model
+                                            ? ` ${job.device.model}`
+                                            : ""}
+                                    </td>
+
+                                    <td>
+                                        {job.problemDescription}
+                                    </td>
+
+                                    <td>
+                                        {job.assignedTo
+                                            ? `${job.assignedTo.firstName} ${job.assignedTo.lastName}`
+                                            : "--"}
+                                    </td>
+
+                                    <td>
+                                        {job.closedAt
+                                            ? new Date(
+                                                  job.closedAt,
+                                              ).toLocaleDateString()
+                                            : "--"}
+                                    </td>
+
+                                    <td>
+                                        {job.closeReason || "--"}
+                                    </td>
+
+                                    <td>
+                                        <Button
+                                            size="sm"
+                                            variant="outline-primary"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/technician/jobs/${job.jobNumber}`,
+                                                )
+                                            }
+                                        >
+                                            View
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                    </tbody>
+                </Table>
+            )}
+        </>
+    )}
+</div>    
         </>
 
     );

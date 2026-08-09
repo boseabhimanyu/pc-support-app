@@ -82,3 +82,52 @@ export type JobAssignedTo = {
     lastName: string;
     role: string;
 };
+
+export type JobCustomerProfile = {
+    id: string;
+    jobNumber: string;
+    status: string;
+
+    customer: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+    };
+
+    device: {
+        id: string;
+        type: string;
+        brand?: string;
+        model?: string;
+        serialNumber?: string;
+    };
+
+    problemDescription: string;
+    notes: string | null;
+    createdAt: string;
+
+    createdBy: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+    };
+
+    assignedTo?: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+    };
+
+    closeReason?: string;
+    closureNotes?: string;
+    closedAt?: string;
+    internalClosureNotes?: string;
+};
+
+export type CustomerJobsResponse = {
+    jobsCount: number;
+    jobs: JobCustomerProfile[];
+};
