@@ -21,7 +21,7 @@ import DeviceDetails from "../features/devices/DeviceDetails";
 import AuditLogs from "../features/auditlogs/AuditLogs";
 import JobManagement from "../features/jobs/JobManagement";
 import StaffJobDetails from "../features/jobs/StaffJobDetails";
-
+import MyJobs from "../features/jobs/MyJobs";
 
 export default function AppRoutes() {
   return (
@@ -182,6 +182,11 @@ export default function AppRoutes() {
     element={<StaffJobDetails />}
 />
 
+<Route
+    path="my-jobs"
+    element={<MyJobs />}
+/>
+
     <Route
         path="profile"
         element={<StaffProfile />}
@@ -249,6 +254,11 @@ export default function AppRoutes() {
 <Route
     path="jobs/:jobNumber"
     element={<StaffJobDetails />}
+/>
+
+<Route
+    path="my-jobs"
+    element={<MyJobs />}
 />
 
     <Route

@@ -46,6 +46,10 @@ export const roleMenus: Record<string, MenuItem[]> = {
             label: "Job Management",
             path: "/technician/jobs",
         },
+        {
+            label: "My Jobs",
+            path: "/technician/my-jobs",
+        },
 
         {
             label: "My Profile",
@@ -74,6 +78,11 @@ export const roleMenus: Record<string, MenuItem[]> = {
         {
             label: "Staff Management",
             path: "/head-technician/staff",
+        },
+
+        {
+            label: "My Jobs",
+            path: "/technician/my-jobs",
         },
 
         {

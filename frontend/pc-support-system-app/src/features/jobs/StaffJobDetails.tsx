@@ -73,6 +73,11 @@ function fullName(
 export default function StaffJobDetails() {
     const { jobNumber } = useParams();
 
+    console.log(
+        "StaffJobDetails jobNumber:",
+        jobNumber,
+    );
+
     const navigate = useNavigate();
 
     const { user } = useAuth();

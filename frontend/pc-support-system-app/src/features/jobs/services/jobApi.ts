@@ -135,3 +135,14 @@ export async function searchJobs(query: string) {
 
     return response.data;
 }
+
+export async function fetchMyJobs() {
+    const response = await api.get("/jobs/my");
+
+    return response.data;
+}
+
+export type MyJobsResponse = {
+    myJobsCount: number;
+    jobs: Job[];
+};
