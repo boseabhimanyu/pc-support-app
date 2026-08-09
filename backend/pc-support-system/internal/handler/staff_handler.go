@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -132,6 +134,51 @@ func (h *UserHandler) GetStaffByID(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, staff)
+}
+
+func (h *UserHandler) FindStaff(c *gin.Context) {
+
+	search := c.Query("q")
+	rolesParam := c.Query("roles")
+
+	var roles []models.Role
+
+	if rolesParam != "" {
+		for _, role := range strings.Split(rolesParam, ",") {
+
+			role = strings.TrimSpace(role)
+
+			if role == "" {
+				continue
+			}
+
+			userRole := models.Role(role)
+
+			if !userRole.IsValid() {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": "invalid staff role: " + role,
+				})
+				return
+			}
+
+			roles = append(roles, userRole)
+		}
+	}
+
+	staff, err := h.userService.FindStaff(
+		c.Request.Context(),
+		search,
+		roles,
+		c.GetString("userID"),
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return

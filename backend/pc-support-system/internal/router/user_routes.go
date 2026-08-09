@@ -102,5 +102,14 @@ func RegisterUserRoutes(rg *gin.RouterGroup, userHandler *handlers.UserHandler) 
 			),
 			userHandler.GetStaffByID,
 		)
+		staff.GET(
+			"/role-search",
+			auth.RequireRoles(
+				string(models.RoleHeadTechnician), // sample search GET /api/v1/staff/role-search?q=pooja&roles=technician,head_technician
+				string(models.RoleAdmin),          // GET /api/v1/staff/role-search?q=pooja%20gaur&roles=technician,head_technician
+			),
+			userHandler.FindStaff,
+		)
+
 	}
 }
