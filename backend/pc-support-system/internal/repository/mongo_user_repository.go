@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/models"
@@ -113,36 +114,59 @@ func (r *MongoUserRepository) Search(
 	query string,
 ) ([]models.User, error) {
 
+	query = strings.TrimSpace(query)
+
 	filter := bson.M{
 		"role": models.RoleCustomer,
-		"$or": []bson.M{
-			{
-				"phone": bson.M{
-					"$regex":   query,
-					"$options": "i",
-				},
-			},
-			{
-				"email": bson.M{
-					"$regex":   query,
-					"$options": "i",
-				},
-			},
-			{
-				"first_name": bson.M{
-					"$regex":   query,
-					"$options": "i",
-				},
-			},
-			{
-				"last_name": bson.M{
-					"$regex":   query,
-					"$options": "i"},
-			},
-		},
 	}
 
-	cursor, err := r.collection.Find(ctx, filter)
+	if query == "" {
+		return []models.User{}, nil
+	}
+
+	// Split multi-word searches such as:
+	// "pooja gaur" -> ["pooja", "gaur"]
+	terms := strings.Fields(query)
+
+	// Each term must match at least one of the searchable fields.
+	//
+	// This allows:
+	// "poo"        -> Pooja
+	// "gaur"       -> Gaur
+	// "pooja gaur" -> Pooja Gaur
+	//
+	// while still supporting phone/email searches.
+	var termFilters []bson.M
+
+	for _, term := range terms {
+		regex := bson.Regex{
+			Pattern: regexp.QuoteMeta(term),
+			Options: "i",
+		}
+
+		termFilters = append(termFilters, bson.M{
+			"$or": []bson.M{
+				{"phone": regex},
+				{"email": regex},
+				{"first_name": regex},
+				{"last_name": regex},
+			},
+		})
+	}
+
+	if len(termFilters) == 1 {
+		filter["$or"] = termFilters[0]["$or"]
+	} else {
+		filter["$and"] = termFilters
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{
+			{Key: "first_name", Value: 1},
+			{Key: "last_name", Value: 1},
+		})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -217,24 +241,31 @@ func (r *MongoUserRepository) SearchStaff(
 	}
 
 	if query != "" {
+		terms := strings.Fields(query)
 
-		regex := bson.Regex{
-			Pattern: query,
-			Options: "i",
+		andConditions := make([]bson.M, 0, len(terms))
+
+		for _, term := range terms {
+			regex := bson.Regex{
+				Pattern: term,
+				Options: "i",
+			}
+
+			andConditions = append(
+				andConditions,
+				bson.M{
+					"$or": []bson.M{
+						{"first_name": regex},
+						{"last_name": regex},
+						{"email": regex},
+						{"phone": regex},
+						{"role": regex},
+					},
+				},
+			)
 		}
 
-		filter = bson.M{
-			"role": bson.M{
-				"$ne": models.RoleCustomer,
-			},
-			"$or": []bson.M{
-				{"first_name": regex},
-				{"last_name": regex},
-				{"email": regex},
-				{"phone": regex},
-				{"role": regex},
-			},
-		}
+		filter["$and"] = andConditions
 	}
 
 	opts := options.Find().
