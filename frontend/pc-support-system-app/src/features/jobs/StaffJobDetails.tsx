@@ -1,4 +1,4 @@
-
+import { api } from "../../app/api";
 import { useEffect, useState } from "react";
 import {
     Alert,
@@ -6,6 +6,7 @@ import {
     Button,
     Card,
     Col,
+    Modal,
     Row,
     Spinner,
 } from "react-bootstrap";
@@ -16,12 +17,39 @@ import {
 
 import { useAuth } from "../auth/hooks/useAuth";
 
-import {
-    fetchJobByNumber,
-    addJobNote,
-} from "./services/jobApi";
+import { fetchJobByNumber, addJobNote } from "./services/jobApi";
 
 import type { Job } from "./jobTypes";
+
+export type AssignableStaff = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    state: string;
+};
+
+export async function searchAssignableStaff(): Promise<AssignableStaff[]> {
+    const response = await api.get<AssignableStaff[]>(
+        "/staff/search?q=tech",
+    );
+
+    return response.data;
+}
+
+export async function assignJob(
+    jobId: string,
+    staffId: string,
+) {
+    const response = await api.patch(
+        `/jobs/${jobId}/assign`,
+        {
+            staffId,
+        },
+    );
+
+    return response.data;
+}
 
 function formatStatus(status: string) {
     const statusLabels: Record<string, string> = {
@@ -128,6 +156,13 @@ export default function StaffJobDetails() {
         )
     );
 
+    const canAssignJob =
+    job?.status !== "closed" &&
+    (
+        user?.role === "admin" ||
+        user?.role === "head_technician"
+    );
+
     async function loadJob() {
         if (!jobNumber) {
             setError("Job number is missing.");
@@ -164,6 +199,39 @@ export default function StaffJobDetails() {
     useEffect(() => {
         loadJob();
     }, [jobNumber]);
+
+    useEffect(() => {
+    if (!canAssignJob) {
+        return;
+    }
+
+    async function loadAssignableStaff() {
+        try {
+            setLoadingStaff(true);
+            setAssignmentError("");
+
+            const results =
+                await searchAssignableStaff();
+
+            setStaff(results);
+        } catch (err: any) {
+            console.error(
+                "Assignable staff error:",
+                err.response?.data,
+            );
+
+            setAssignmentError(
+                err.response?.data?.error ??
+                    err.response?.data?.message ??
+                    "Unable to load technicians.",
+            );
+        } finally {
+            setLoadingStaff(false);
+        }
+    }
+
+    loadAssignableStaff();
+}, [canAssignJob]);
 
     async function handleAddNote() {
         if (!job) {
@@ -206,6 +274,65 @@ export default function StaffJobDetails() {
             setSavingNote(false);
         }
     }
+
+    const [staff, setStaff] =
+    useState<AssignableStaff[]>([]);
+
+const [selectedStaffId, setSelectedStaffId] =
+    useState("");
+
+const [loadingStaff, setLoadingStaff] =
+    useState(false);
+
+const [assigning, setAssigning] =
+    useState(false);
+
+const [assignmentError, setAssignmentError] =
+    useState("");
+
+const [assignmentSuccess, setAssignmentSuccess] =
+    useState("");
+const [showAssignConfirmation, setShowAssignConfirmation] =
+    useState(false);
+    async function handleAssignJob() {
+    if (!job || !selectedStaffId) {
+        return;
+    }
+
+    try {
+        setAssigning(true);
+        setAssignmentError("");
+        setAssignmentSuccess("");
+
+        await assignJob(
+            job.id,
+            selectedStaffId,
+        );
+
+        setAssignmentSuccess(
+            "Job assigned successfully.",
+        );
+
+        setSelectedStaffId("");
+
+        // Reload job so assignedTo and status
+        // immediately reflect the backend.
+        await loadJob();
+    } catch (err: any) {
+        console.error(
+            "Assign job error:",
+            err.response?.data,
+        );
+
+        setAssignmentError(
+            err.response?.data?.error ??
+                err.response?.data?.message ??
+                "Unable to assign job.",
+        );
+    } finally {
+        setAssigning(false);
+    }
+}
 
     if (loading) {
         return (
@@ -574,7 +701,7 @@ export default function StaffJobDetails() {
                     </Card>
 
                     {/* Created By */}
-                    <Card>
+                    <Card className="mb-4">
                         <Card.Body>
                             <Card.Title className="mb-3">
                                 Created By
@@ -593,8 +720,242 @@ export default function StaffJobDetails() {
                             </div>
                         </Card.Body>
                     </Card>
+                                
+                    <Card className="mb-4">
+    <Card.Body>
+        <Card.Title className="mb-3">
+            Assign Job
+        </Card.Title>
+
+        {/* Current assignment */}
+        {job.assignedTo ? (
+            <div className="mb-3">
+                <div className="text-muted small">
+                    Currently Assigned To
+                </div>
+
+                <div className="fw-semibold">
+                    {fullName(
+                        job.assignedTo,
+                    )}
+                </div>
+
+                <div className="text-muted">
+                    {formatRole(
+                        job.assignedTo.role,
+                    )}
+                </div>
+            </div>
+        ) : (
+            <div className="text-muted mb-3">
+                Not assigned
+            </div>
+        )}
+
+        {/* Assignment controls */}
+        {canAssignJob && (
+            <>
+                <hr />
+
+                {assignmentSuccess && (
+                    <Alert variant="success">
+                        {assignmentSuccess}
+                    </Alert>
+                )}
+
+                {assignmentError && (
+                    <Alert variant="danger">
+                        {assignmentError}
+                    </Alert>
+                )}
+
+                <label
+                    htmlFor="assignStaff"
+                    className="form-label"
+                >
+                    Select Technician
+                </label>
+
+                <select
+                    id="assignStaff"
+                    className="form-select mb-3"
+                    value={selectedStaffId}
+                    disabled={
+                        loadingStaff ||
+                        assigning
+                    }
+                    onChange={(event) =>
+                        setSelectedStaffId(
+                            event.target.value,
+                        )
+                    }
+                >
+                    <option value="">
+                        {loadingStaff
+                            ? "Loading staff..."
+                            : "Select staff"}
+                    </option>
+
+                    {staff.map((person) => (
+                        <option
+                            key={person.id}
+                            value={person.id}
+                        >
+                            {person.firstName}{" "}
+                            {person.lastName}
+                            {" — "}
+                            {formatRole(
+                                person.role,
+                            )}
+                        </option>
+                    ))}
+                </select>
+
+               <Button
+                variant="primary"
+                disabled={
+                    !selectedStaffId ||
+                    assigning ||
+                    loadingStaff
+                }
+                onClick={() =>
+                    setShowAssignConfirmation(true)
+                }
+            >
+                Assign
+                </Button>
+            </>
+        )}
+    </Card.Body>
+</Card>
                 </Col>
             </Row>
+
+           <Modal
+    show={showAssignConfirmation}
+    onHide={() =>
+        setShowAssignConfirmation(false)
+    }
+    centered
+>
+    <Modal.Header closeButton>
+        <Modal.Title>
+            {job.assignedTo
+                ? "Reassign Job"
+                : "Assign Job"}
+        </Modal.Title>
+    </Modal.Header>
+
+    <Modal.Body>
+
+        {[
+            "assigned",
+            "in_progress",
+            "waiting_customer",
+            "resumed",
+        ].includes(job.status) && (
+            <Alert variant="warning">
+                This job is currently{" "}
+                <strong>
+                    {formatStatus(job.status)}
+                </strong>
+                .
+                Reassigning it will change
+                the staff member responsible
+                for the job.
+            </Alert>
+        )}
+
+        {job.assignedTo ? (
+            <>
+                <p>
+                    This job is currently assigned
+                    to{" "}
+                    <strong>
+                        {fullName(
+                            job.assignedTo,
+                        )}
+                    </strong>
+                    .
+                </p>
+
+                <p className="mb-0">
+                    Are you sure you want to
+                    reassign this job to{" "}
+                    <strong>
+                        {
+                            staff.find(
+                                (person) =>
+                                    person.id ===
+                                    selectedStaffId,
+                            )?.firstName
+                        }{" "}
+                        {
+                            staff.find(
+                                (person) =>
+                                    person.id ===
+                                    selectedStaffId,
+                            )?.lastName
+                        }
+                    </strong>
+                    ?
+                </p>
+            </>
+        ) : (
+            <p className="mb-0">
+                Are you sure you want to
+                assign this job to{" "}
+                <strong>
+                    {
+                        staff.find(
+                            (person) =>
+                                person.id ===
+                                selectedStaffId,
+                        )?.firstName
+                    }{" "}
+                    {
+                        staff.find(
+                            (person) =>
+                                person.id ===
+                                selectedStaffId,
+                        )?.lastName
+                    }
+                </strong>
+                ?
+            </p>
+        )}
+
+    </Modal.Body>
+
+    <Modal.Footer>
+
+        <Button
+            variant="secondary"
+            onClick={() =>
+                setShowAssignConfirmation(false)
+            }
+            disabled={assigning}
+        >
+            Cancel
+        </Button>
+
+        <Button
+            variant="primary"
+            onClick={async () => {
+                setShowAssignConfirmation(false);
+                await handleAssignJob();
+            }}
+            disabled={assigning}
+        >
+            {assigning
+                ? "Assigning..."
+                : job.assignedTo
+                    ? "Yes, Reassign"
+                    : "Yes, Assign"}
+        </Button>
+
+    </Modal.Footer>
+</Modal>
         </div>
     );
 }

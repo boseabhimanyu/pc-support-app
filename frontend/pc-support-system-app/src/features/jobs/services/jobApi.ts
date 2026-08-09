@@ -6,6 +6,7 @@ import type {
 } from "../types/job";
 import type { Job, CreateJobRequest, AddJobNoteRequest, AddJobNoteResponse, JobQueueResponse } from "../jobTypes";
 import type { CustomerJobsResponse } from "../../jobs/jobTypes";
+import type { JobCustomerProfile } from "../jobTypes";
 export const jobApi = {
 
 
@@ -152,6 +153,40 @@ export async function getJobsByCustomer(
 ): Promise<CustomerJobsResponse> {
     const response = await api.get<CustomerJobsResponse>(
         `/jobs/customer/${customerId}/`,
+    );
+
+    return response.data;
+}
+
+export async function assignJob(
+    jobId: string,
+    staffId: string,
+): Promise<JobCustomerProfile> {
+    const response = await api.patch<JobCustomerProfile>(
+        `/jobs/${jobId}/assign`,
+        {
+            staffId,
+        },
+    );
+
+    return response.data;
+}
+
+export type AssignableStaff = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string;
+    state: string;
+};
+
+export async function searchStaff(
+    query: string,
+): Promise<AssignableStaff[]> {
+    const response = await api.get<AssignableStaff[]>(
+        `/staff/search?q=${encodeURIComponent(query)}`,
     );
 
     return response.data;
