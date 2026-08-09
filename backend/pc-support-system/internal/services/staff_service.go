@@ -539,3 +539,48 @@ func (s *UserService) GetStaffByID(
 
 	return dto.ToStaffResponse(staff), nil
 }
+
+func (s *UserService) FindStaff(
+	ctx context.Context,
+	search string,
+	roles []models.Role,
+	requestingUserID string,
+) ([]models.User, error) {
+
+	// Get the currently logged-in user
+	userObjectID, err := bson.ObjectIDFromHex(requestingUserID)
+	if err != nil {
+		return nil, errors.New("invalid user")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userObjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	// Only admin and head technician can use
+	// this staff-search functionality.
+	switch user.Role {
+	case models.RoleAdmin,
+		models.RoleHeadTechnician:
+		// allowed
+	default:
+		return nil, errors.New("user cannot search staff")
+	}
+
+	if user.State != models.UserActive {
+		return nil, errors.New("user account is inactive")
+	}
+
+	search = strings.TrimSpace(search)
+
+	return s.userRepo.FindStaff(
+		ctx,
+		search,
+		roles,
+	)
+}

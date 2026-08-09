@@ -21,5 +21,6 @@ type UserRepository interface {
 	UpdateRefreshToken(ctx context.Context, userID bson.ObjectID, token string, expiresAt time.Time) error
 	ClearRefreshToken(ctx context.Context, userID bson.ObjectID) error
 	FindByRefreshToken(ctx context.Context, token string) (*models.User, error)
+	FindStaff(ctx context.Context, search string, roles []models.Role) ([]models.User, error)
 	// Delete(id bson.ObjectID) error
 }

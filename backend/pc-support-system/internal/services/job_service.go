@@ -622,26 +622,37 @@ func (s *JobService) ChangeJobStatus(
 
 	case models.JobAssigned:
 		if req.Status != models.JobInProgress {
-			return nil, errors.New("assigned jobs can only move to in progress")
+			return nil, errors.New(
+				"Assigned jobs can only be moved to In progress",
+			)
 		}
 
 	case models.JobInProgress:
 		if req.Status != models.JobWaitingCustomer {
-			return nil, errors.New("invalid status transition")
+			return nil, errors.New(
+				"In progress jobs can only be moved to Waiting for customer",
+			)
 		}
 
 	case models.JobWaitingCustomer:
-		if req.Status != models.JobResumed {
-			return nil, errors.New("invalid status transition")
+		if req.Status != models.JobInProgress &&
+			req.Status != models.JobResumed {
+			return nil, errors.New(
+				"Waiting for customer jobs can only be moved to In progress or Resumed",
+			)
 		}
 
 	case models.JobResumed:
 		if req.Status != models.JobWaitingCustomer {
-			return nil, errors.New("invalid status transition")
+			return nil, errors.New(
+				"Resumed jobs can only be moved to Waiting for customer or closed",
+			)
 		}
 
 	default:
-		return nil, errors.New("invalid current job status")
+		return nil, errors.New(
+			"job is in an invalid status",
+		)
 	}
 
 	oldStatus := job.Status
