@@ -17,7 +17,7 @@ import {
 
 import { useAuth } from "../auth/hooks/useAuth";
 
-import { fetchJobByNumber, addJobNote } from "./services/jobApi";
+import { fetchJobByNumber, addJobNote, updateJobStatus } from "./services/jobApi";
 
 import type { Job } from "./jobTypes";
 
@@ -128,6 +128,17 @@ export default function StaffJobDetails() {
     const [noteError, setNoteError] =
         useState("");
 
+    const [selectedStatus, setSelectedStatus] =
+    useState("");
+
+    const [changingStatus, setChangingStatus] =
+        useState(false);
+
+    const [statusError, setStatusError] =
+        useState("");
+
+    const [statusSuccess, setStatusSuccess] =
+        useState("");
     /*
      * Note permissions:
      *
@@ -275,25 +286,65 @@ export default function StaffJobDetails() {
         }
     }
 
+    async function handleStatusChange() {
+    if (!job || !selectedStatus) {
+        return;
+    }
+
+    try {
+        setChangingStatus(true);
+        setStatusError("");
+        setStatusSuccess("");
+
+        const updatedJob =
+            await updateJobStatus(
+                job.id,
+                selectedStatus,
+            );
+
+        setJob(updatedJob);
+
+        setStatusSuccess(
+            "Job status updated successfully.",
+        );
+
+        setSelectedStatus("");
+
+    } catch (err: any) {
+        console.error(
+            "Update job status error:",
+            err.response?.data,
+        );
+
+        setStatusError(
+            err.response?.data?.error ??
+                err.response?.data?.message ??
+                "Unable to update job status.",
+        );
+    } finally {
+        setChangingStatus(false);
+    }
+}
     const [staff, setStaff] =
     useState<AssignableStaff[]>([]);
 
-const [selectedStaffId, setSelectedStaffId] =
-    useState("");
+    const [selectedStaffId, setSelectedStaffId] =
+        useState("");
 
-const [loadingStaff, setLoadingStaff] =
-    useState(false);
+    const [loadingStaff, setLoadingStaff] =
+        useState(false);
 
-const [assigning, setAssigning] =
-    useState(false);
+    const [assigning, setAssigning] =
+        useState(false);
 
-const [assignmentError, setAssignmentError] =
-    useState("");
+    const [assignmentError, setAssignmentError] =
+        useState("");
 
-const [assignmentSuccess, setAssignmentSuccess] =
-    useState("");
-const [showAssignConfirmation, setShowAssignConfirmation] =
-    useState(false);
+    const [assignmentSuccess, setAssignmentSuccess] =
+        useState("");
+    const [showAssignConfirmation, setShowAssignConfirmation] =
+        useState(false);
+
     async function handleAssignJob() {
     if (!job || !selectedStaffId) {
         return;
@@ -699,7 +750,93 @@ const [showAssignConfirmation, setShowAssignConfirmation] =
                             )}
                         </Card.Body>
                     </Card>
+                    {/* Change Job Status */}
+                    <Card className="mb-4">
+                        <Card.Body>
+                            <Card.Title className="mb-3">
+                                Change Job Status
+                            </Card.Title>
 
+                            {statusSuccess && (
+                                <Alert variant="success">
+                                    {statusSuccess}
+                                </Alert>
+                            )}
+
+                            {statusError && (
+                                <Alert variant="danger">
+                                    {statusError}
+                                </Alert>
+                            )}
+
+                            {job.status === "closed" ? (
+                                <div className="text-muted">
+                                    This job is closed.
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="text-muted small mb-2">
+                                        Current Status
+                                    </div>
+
+                                    <div className="fw-semibold mb-3">
+                                        {formatStatus(job.status)}
+                                    </div>
+
+                                    <label
+                                        htmlFor="jobStatus"
+                                        className="form-label"
+                                    >
+                                        New Status
+                                    </label>
+
+                                    <select
+                                        id="jobStatus"
+                                        className="form-select mb-3"
+                                        value={selectedStatus}
+                                        disabled={changingStatus}
+                                        onChange={(event) => {
+                                            setSelectedStatus(
+                                                event.target.value,
+                                            );
+
+                                            setStatusError("");
+                                            setStatusSuccess("");
+                                        }}
+                                    >
+                                        <option value="">
+                                            Select status
+                                        </option>
+
+                                        <option value="in_progress">
+                                            In progress
+                                        </option>
+
+                                        <option value="waiting_customer">
+                                            Waiting for customer
+                                        </option>
+
+                                        <option value="resumed">
+                                            Resumed
+                                        </option>
+                                    </select>
+
+                                    <Button
+                                        variant="primary"
+                                        disabled={
+                                            !selectedStatus ||
+                                            changingStatus
+                                        }
+                                        onClick={handleStatusChange}
+                                    >
+                                        {changingStatus
+                                            ? "Updating..."
+                                            : "Update Status"}
+                                    </Button>
+                                </>
+                            )}
+                        </Card.Body>
+                    </Card>
                     {/* Created By */}
                     <Card className="mb-4">
                         <Card.Body>

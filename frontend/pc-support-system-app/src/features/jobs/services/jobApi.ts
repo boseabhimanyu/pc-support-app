@@ -191,3 +191,16 @@ export async function searchStaff(
 
     return response.data;
 }
+export async function updateJobStatus(
+    jobId: string,
+    status: string,
+): Promise<Job> {
+    const response = await api.patch<Job>(
+        `/jobs/${jobId}/status`,
+        {
+            status,
+        },
+    );
+
+    return response.data;
+}
