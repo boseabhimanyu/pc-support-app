@@ -464,6 +464,7 @@ const [deviceError, setDeviceError] =
                                 </tr>
                         </thead>
 
+                    
                         <tbody>
                             {devices.map((device) => (
                                 <tr key={device.id}>
@@ -472,20 +473,43 @@ const [deviceError, setDeviceError] =
                                     <td>{device.model || "--"}</td>
                                     <td>{device.serialNumber || "--"}</td>
                                     <td>{device.condition}</td>
+
                                     <td>
-                                        <Button
-                                            size="sm"
-                                            variant="outline-primary"
-                                            onClick={() =>
-                                                navigate(`devices/${device.id}`)
-                                            }
-                                        >
-                                            View
-                                        </Button>
+                                        <div className="d-flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant="outline-primary"
+                                                onClick={() =>
+                                                    navigate(`devices/${device.id}`)
+                                                }
+                                            >
+                                                View
+                                            </Button>
+
+                                            <Button
+                                                size="sm"
+                                                variant="primary"
+                                                onClick={() =>
+                                                    navigate(`devices/${device.id}/create-job`, {
+                                                        state: {
+                                                            customerName: `${customer.firstName} ${customer.lastName}`,
+                                                            deviceType: device.type,
+                                                            deviceBrand: device.brand,
+                                                            deviceModel: device.model,
+                                                            deviceSerialNumber: device.serialNumber,
+                                                        },
+                                                    })
+                                                }
+                                            >
+                                                Create Job
+                                            </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
+
+
 
                     </table>
 

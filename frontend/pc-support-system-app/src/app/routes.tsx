@@ -22,6 +22,7 @@ import AuditLogs from "../features/auditlogs/AuditLogs";
 import JobManagement from "../features/jobs/JobManagement";
 import StaffJobDetails from "../features/jobs/StaffJobDetails";
 import MyJobs from "../features/jobs/MyJobs";
+import CreateJobPage from "../features/jobs/CreateJobPage";
 
 export default function AppRoutes() {
   return (
@@ -147,6 +148,11 @@ export default function AppRoutes() {
             path="customers/:customerId/devices/:deviceId/edit"
             element={<DeviceForm />}
         />
+
+        <Route
+    path="customers/:customerId/devices/:deviceId/create-job"
+    element={<CreateJobPage />}
+/>
 
     </Route>
 
@@ -280,6 +286,10 @@ export default function AppRoutes() {
             path="customers/:customerId/devices/:deviceId/edit"
             element={<DeviceForm />}
         />
+        <Route
+    path="customers/:customerId/devices/:deviceId/create-job"
+    element={<CreateJobPage />}
+/>
 
 </Route>
 
@@ -352,6 +362,10 @@ export default function AppRoutes() {
     <Route
         path="customers/:customerId/devices/:deviceId/edit"
         element={<DeviceForm />}
+    />
+    <Route
+    path="customers/:customerId/devices/:deviceId/create-job"
+    element={<CreateJobPage />}
     />
     <Route
     path="audit-logs"
