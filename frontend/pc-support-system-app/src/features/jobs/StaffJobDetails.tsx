@@ -167,6 +167,14 @@ export default function StaffJobDetails() {
         )
     );
 
+    const canChangeJobStatus =
+    job?.status !== "closed" &&
+    (
+        user?.role === "technician" ||
+        user?.role === "head_technician"
+    ) &&
+    job?.assignedTo?.id === user.id;
+
     const canAssignJob =
     job?.status !== "closed" &&
     (
@@ -751,6 +759,7 @@ export default function StaffJobDetails() {
                         </Card.Body>
                     </Card>
                     {/* Change Job Status */}
+                    {canChangeJobStatus && (
                     <Card className="mb-4">
                         <Card.Body>
                             <Card.Title className="mb-3">
@@ -836,7 +845,7 @@ export default function StaffJobDetails() {
                                 </>
                             )}
                         </Card.Body>
-                    </Card>
+                    </Card> )}
                     {/* Created By */}
                     <Card className="mb-4">
                         <Card.Body>
