@@ -1384,6 +1384,42 @@
                     }
                   },
                   "response": []
+                },
+                {
+                  "name": "Search staff role based",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"firstName\": \"Mohit\",\n    \"lastName\": \"Sharma\",\n    \"phone\": \"7845960203\",\n    \"email\": \"mohits16@gmail.com\",\n    \"role\": \"head_technician\" \n}"
+                    },
+                    "url": {
+                      "raw": "http://localhost:{{Port}}/api/v1/staff/role-search?roles=head_technician,receptionist,super_admin",
+                      "protocol": "http",
+                      "host": [
+                        "localhost"
+                      ],
+                      "port": "{{Port}}",
+                      "path": [
+                        "api",
+                        "v1",
+                        "staff",
+                        "role-search"
+                      ],
+                      "query": [
+                        {
+                          "key": "roles",
+                          "value": "head_technician,receptionist,super_admin"
+                        }
+                      ]
+                    },
+                    "description": "it accepts:\n\n- `q` → search text\n    \n- `roles` → comma-separated roles\n    \n\nthen you pass them as **query parameters**.\n\n// sample search GET /api/v1/staff/role-search?q=pooja&roles=technician,head_technician\n\n// GET /api/v1/staff/role-search?q=pooja gaur&roles=technician,head_technician"
+                  },
+                  "response": []
                 }
               ]
             }
