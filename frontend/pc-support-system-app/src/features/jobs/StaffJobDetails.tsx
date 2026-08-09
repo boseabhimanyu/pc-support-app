@@ -115,6 +115,8 @@ export default function StaffJobDetails() {
      * but cannot add notes.
      */
     const canAddNote =
+    job?.status !== "closed" &&
+    (
         user?.role === "receptionist" ||
         (
             user?.role === "technician" &&
@@ -123,7 +125,8 @@ export default function StaffJobDetails() {
         (
             user?.role === "head_technician" &&
             job?.assignedTo?.id === user.id
-        );
+        )
+    );
 
     async function loadJob() {
         if (!jobNumber) {
