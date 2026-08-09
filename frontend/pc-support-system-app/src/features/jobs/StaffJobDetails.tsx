@@ -29,9 +29,16 @@ export type AssignableStaff = {
     state: string;
 };
 
-export async function searchAssignableStaff(): Promise<AssignableStaff[]> {
+export async function searchAssignableStaff(): Promise<
+    AssignableStaff[]
+> {
     const response = await api.get<AssignableStaff[]>(
-        "/staff/search?q=tech",
+        "/staff/role-search",
+        {
+            params: {
+                roles: "technician,head_technician",
+            },
+        },
     );
 
     return response.data;
