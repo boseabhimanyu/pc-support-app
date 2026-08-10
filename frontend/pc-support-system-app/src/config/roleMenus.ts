@@ -36,12 +36,6 @@ export const roleMenus: Record<string, MenuItem[]> = {
             path: "/technician",
         },
 
-
-        {
-            label: "Customer Management",
-            path: "/technician/customers",
-        },
-
         {
             label: "Job Management",
             path: "/technician/jobs",

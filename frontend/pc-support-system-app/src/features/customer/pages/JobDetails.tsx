@@ -8,7 +8,7 @@ import {
     Spinner,
 } from "react-bootstrap";
 
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 
 import CustomerLayout from "../../../layouts/CustomerLayout";
 

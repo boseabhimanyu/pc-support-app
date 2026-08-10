@@ -1,5 +1,5 @@
 import { Nav } from "react-bootstrap";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 export default function CustomerSidebar() {
     return (

@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import { useMemo } from "react";
 
 import Header from "../components/Header";

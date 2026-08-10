@@ -8,7 +8,7 @@ import {
     Row,
     Table,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useAuth } from "../auth/hooks/useAuth";
 
 

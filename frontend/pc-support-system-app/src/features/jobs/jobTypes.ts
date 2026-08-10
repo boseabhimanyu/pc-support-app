@@ -50,7 +50,7 @@ export type Job = {
     notes: JobNote[] | null;
 
     createdAt: string;
-
+    closedAt?: string;
     createdBy: JobAuthor;
     assignedTo?: JobAssignedTo | null;
 };

@@ -11,7 +11,7 @@ import {
 import {
     useNavigate,
     useParams,
-} from "react-router-dom";
+} from "react-router";
 
 import {api} from "../../app/api";
 

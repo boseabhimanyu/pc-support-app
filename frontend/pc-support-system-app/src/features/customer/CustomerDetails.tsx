@@ -7,9 +7,8 @@ import {
     Spinner,
     Form
 } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate  } from "react-router";
 import { Button, Table } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useAuth";
 import { canEditCustomer, canResetCustomerPassword } from "../../shared/utils/permissions";
 import {api} from "../../app/api";

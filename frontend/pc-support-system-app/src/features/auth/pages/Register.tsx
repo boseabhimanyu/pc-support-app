@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, Container } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import RegisterForm from "../components/RegisterForm";
 import { authApi } from "../services/authApi";

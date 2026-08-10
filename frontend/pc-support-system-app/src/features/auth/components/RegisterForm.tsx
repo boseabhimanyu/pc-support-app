@@ -7,7 +7,7 @@ import {
   Row,
   Alert,
 } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import type { RegisterRequest } from "../types";
 
 interface RegisterFormProps {

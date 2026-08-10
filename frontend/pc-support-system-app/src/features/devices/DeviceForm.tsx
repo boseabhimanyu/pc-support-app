@@ -9,7 +9,7 @@ import {
     Row,
     Spinner,
 } from "react-bootstrap";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation,useNavigate } from "react-router";
 
 import { api } from "../../app/api";
 
@@ -22,7 +22,6 @@ import type {
     Device,
     DeviceFormData,
 } from "./types";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useAuth";
 
 export default function DeviceForm() {

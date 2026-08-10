@@ -13,7 +13,7 @@ import {
 import {
     useNavigate,
     useParams,
-} from "react-router-dom";
+} from "react-router";
 
 import { useAuth } from "../auth/hooks/useAuth";
 
@@ -350,7 +350,7 @@ export default function StaffJobDetails() {
         setChangingStatus(false);
     }
 }
-    const handleCloseJob = async () => {
+const handleCloseJob = async () => {
     if (!job) {
         return;
     }
@@ -386,17 +386,32 @@ export default function StaffJobDetails() {
         setShowCloseConfirmation(false);
 
         setStatusSuccess("Job closed successfully.");
-    } catch (error) {
-        setStatusError(
-            error instanceof Error
-                ? error.message
-                : "Failed to close job.",
-        );
+
+        // ---------------------------------------------------------------
+    } catch (error: any) {
+        const backendError =
+            error?.response?.data?.error;
+
+        if (
+            backendError ===
+            "Completed jobs can only be closed from Resumed Status"
+        ) {
+            setStatusError(
+                "Follow the correct closure process", // Actual issue has to be fixed
+            );
+        } else {
+            setStatusError(
+                backendError ||
+                    "Failed to close job. Please try again.",
+            );
+        }
+
+        setShowCloseConfirmation(false);
     } finally {
         setClosingJob(false);
     }
 };
-
+      // ---------------------------------------------------------------
 const [staff, setStaff] =
     useState<AssignableStaff[]>([]);
 
@@ -554,11 +569,25 @@ const [staff, setStaff] =
                                     </div>
 
                                     <div>
-                                        {formatDate(
-                                            job.createdAt,
-                                        )}
+                                        {formatDate(job.createdAt)}
                                     </div>
                                 </Col>
+
+                                {job.status === "closed" && (
+                                    <>
+                                        <Col xs={12} md={6}>
+                                            <div className="text-muted small">
+                                                Closed
+                                            </div>
+
+                                            <div >
+                                                {job.closedAt
+                                                    ? formatDate(job.closedAt)
+                                                    : "Closed"}
+                                            </div>
+                                        </Col>
+                                    </>
+                                )}
                             </Row>
                         </Card.Body>
                     </Card>

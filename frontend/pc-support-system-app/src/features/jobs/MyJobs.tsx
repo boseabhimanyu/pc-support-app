@@ -7,7 +7,7 @@ import {
     Spinner,
     Table,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { useAuth } from "../auth/hooks/useAuth";
 import { fetchMyJobs } from "./services/jobApi";

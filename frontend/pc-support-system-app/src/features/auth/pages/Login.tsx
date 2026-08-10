@@ -3,7 +3,7 @@ import { Alert, Container } from "react-bootstrap";
 import { authApi } from "../services/authApi";
 import { mapBackendError } from "../../../shared/utils/errorMapper";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import LoginForm from "../components/LoginForm";
 
