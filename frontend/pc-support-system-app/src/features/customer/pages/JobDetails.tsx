@@ -275,7 +275,36 @@ export default function JobDetails() {
                         </Card.Body>
 
                     </Card>
+                    {job.status === "closed" && (
+    <Card className="mt-3">
+        <Card.Body>
+            <h5>Closure Information</h5>
 
+            <div className="mb-3">
+                <div className="text-muted small">
+                    Closure Notes
+                </div>
+
+                <div>
+                    {job.closureNotes ||
+                        "No closure notes provided."}
+                </div>
+            </div>
+
+            <div>
+                <div className="text-muted small">
+                    Closed On
+                </div>
+
+                <div>
+                    {job.closedAt
+                        ? formatDateTime(job.closedAt)
+                        : "Not specified"}
+                </div>
+            </div>
+        </Card.Body>
+    </Card>
+)}
 
 
                     </>
