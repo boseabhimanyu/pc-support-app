@@ -26,6 +26,7 @@ PORT=<port for webserver>
 JWT_SECRET=<secret-phrase>
 JWT_EXPIRY_HOURS=24
 GIN_MODE=debug //debug or release
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:<port>
 
 ```
 

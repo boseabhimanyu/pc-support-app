@@ -92,8 +92,8 @@ const (
 	JobNotRepairable      JobCloseReason = "not_repairable"
 	JobCustomerCancelled  JobCloseReason = "customer_cancelled"
 	JobCustomerNoResponse JobCloseReason = "customer_no_response"
+	JobCustomerDeclined   JobCloseReason = "customer_declined_repair"
 	JobDuplicateJob       JobCloseReason = "duplicate_job"
-	JobWrongSerial        JobCloseReason = "wrong_serial"
 )
 
 func (r JobCloseReason) IsValid() bool {
@@ -102,8 +102,8 @@ func (r JobCloseReason) IsValid() bool {
 		JobNotRepairable,
 		JobCustomerCancelled,
 		JobCustomerNoResponse,
-		JobDuplicateJob,
-		JobWrongSerial:
+		JobCustomerDeclined,
+		JobDuplicateJob:
 		return true
 	default:
 		return false
