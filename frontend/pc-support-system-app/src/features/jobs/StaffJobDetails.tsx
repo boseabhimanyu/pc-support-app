@@ -20,6 +20,10 @@ import { useAuth } from "../auth/hooks/useAuth";
 import { fetchJobByNumber, addJobNote, updateJobStatus } from "./services/jobApi";
 
 import type { Job } from "./jobTypes";
+import {
+    closeJob,
+    type JobCloseReason,
+} from "./services/jobApi";
 
 export type AssignableStaff = {
     id: string;
@@ -146,6 +150,12 @@ export default function StaffJobDetails() {
 
     const [statusSuccess, setStatusSuccess] =
         useState("");
+    const [closureReason, setClosureReason] = useState("");
+    const [closureNotes, setClosureNotes] = useState("");
+    const [internalClosureNotes, setInternalClosureNotes] = useState("");
+
+    const [closingJob, setClosingJob] = useState(false);
+    const [showCloseConfirmation, setShowCloseConfirmation] = useState(false);
     /*
      * Note permissions:
      *
@@ -340,7 +350,54 @@ export default function StaffJobDetails() {
         setChangingStatus(false);
     }
 }
-    const [staff, setStaff] =
+    const handleCloseJob = async () => {
+    if (!job) {
+        return;
+    }
+
+    if (!closureReason) {
+        setStatusError("Closure reason is required.");
+        return;
+    }
+
+    if (!closureNotes.trim()) {
+        setStatusError("Closure notes are required.");
+        return;
+    }
+
+    try {
+        setClosingJob(true);
+        setStatusError("");
+        setStatusSuccess("");
+
+        const updatedJob = await closeJob(job.id, {
+            reason: closureReason as JobCloseReason,
+            closureNotes: closureNotes.trim(),
+            internalClosureNotes:
+                internalClosureNotes.trim(),
+        });
+
+        setJob(updatedJob);
+
+        setSelectedStatus("");
+        setClosureReason("");
+        setClosureNotes("");
+        setInternalClosureNotes("");
+        setShowCloseConfirmation(false);
+
+        setStatusSuccess("Job closed successfully.");
+    } catch (error) {
+        setStatusError(
+            error instanceof Error
+                ? error.message
+                : "Failed to close job.",
+        );
+    } finally {
+        setClosingJob(false);
+    }
+};
+
+const [staff, setStaff] =
     useState<AssignableStaff[]>([]);
 
     const [selectedStaffId, setSelectedStaffId] =
@@ -835,20 +892,129 @@ export default function StaffJobDetails() {
                                         <option value="resumed">
                                             Resumed
                                         </option>
-                                    </select>
+                                        <option disabled>
+                                            ─────────────
+                                        </option>
 
-                                    <Button
-                                        variant="primary"
-                                        disabled={
-                                            !selectedStatus ||
-                                            changingStatus
-                                        }
-                                        onClick={handleStatusChange}
-                                    >
-                                        {changingStatus
-                                            ? "Updating..."
-                                            : "Update Status"}
-                                    </Button>
+                                        <option value="close">
+                                            Close Job
+                                        </option>
+
+                                    </select>
+                                        {selectedStatus === "close" ? (
+    <div className="mt-3">
+        <label
+            htmlFor="closureReason"
+            className="form-label"
+        >
+            Closure Reason
+        </label>
+
+        <select
+            id="closureReason"
+            className="form-select mb-3"
+            value={closureReason}
+            disabled={closingJob}
+            onChange={(event) => {
+                setClosureReason(event.target.value);
+                setStatusError("");
+            }}
+        >
+            <option value="">
+                Select a reason
+            </option>
+
+            <option value="completed">
+                Completed
+            </option>
+
+            <option value="not_repairable">
+                Not repairable
+            </option>
+
+            <option value="customer_cancelled">
+                Customer cancelled
+            </option>
+
+            <option value="customer_no_response">
+                Customer did not respond
+            </option>
+
+            <option value="customer_declined_repair">
+                Customer declined repair
+            </option>
+
+            <option value="duplicate_job">
+                Duplicate job
+            </option>
+        </select>
+
+        <label
+            htmlFor="closureNotes"
+            className="form-label"
+        >
+            Closure Notes
+        </label>
+
+        <textarea
+            id="closureNotes"
+            className="form-control mb-3"
+            rows={3}
+            value={closureNotes}
+            disabled={closingJob}
+            onChange={(event) => {
+                setClosureNotes(event.target.value);
+                setStatusError("");
+            }}
+        />
+
+        <label
+            htmlFor="internalClosureNotes"
+            className="form-label"
+        >
+            Internal Notes
+        </label>
+
+        <textarea
+            id="internalClosureNotes"
+            className="form-control mb-3"
+            rows={3}
+            value={internalClosureNotes}
+            disabled={closingJob}
+            onChange={(event) => {
+                setInternalClosureNotes(event.target.value);
+                setStatusError("");
+            }}
+        />
+    
+        <Button
+            variant="danger"
+            disabled={
+                !closureReason ||
+                !closureNotes.trim() ||
+                closingJob
+            }
+            onClick={() =>
+                setShowCloseConfirmation(true)
+            }
+        >
+            Close Job
+        </Button>
+    </div>
+) : (
+    <Button
+        variant="primary"
+        disabled={
+            !selectedStatus ||
+            changingStatus
+        }
+        onClick={handleStatusChange}
+    >
+        {changingStatus
+            ? "Updating..."
+            : "Update Status"}
+    </Button>
+)}
                                 </>
                             )}
                         </Card.Body>
@@ -873,7 +1039,7 @@ export default function StaffJobDetails() {
                             </div>
                         </Card.Body>
                     </Card>
-                                
+       {canAssignJob && (                         
                     <Card className="mb-4">
     <Card.Body>
         <Card.Title className="mb-3">
@@ -906,7 +1072,7 @@ export default function StaffJobDetails() {
         )}
 
         {/* Assignment controls */}
-        {canAssignJob && (
+        
             <>
                 <hr />
 
@@ -978,9 +1144,9 @@ export default function StaffJobDetails() {
                 Assign
                 </Button>
             </>
-        )}
+        
     </Card.Body>
-</Card>
+</Card>)}
                 </Col>
             </Row>
 
@@ -1109,6 +1275,43 @@ export default function StaffJobDetails() {
 
     </Modal.Footer>
 </Modal>
+{showCloseConfirmation && (
+    <Modal
+        show={showCloseConfirmation}
+        onHide={() => setShowCloseConfirmation(false)}
+        centered
+    >
+        <Modal.Header closeButton>
+            <Modal.Title>Close Job</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+            Are you sure you want to close this job?
+        </Modal.Body>
+
+        <Modal.Footer>
+            <Button
+                variant="secondary"
+                onClick={() =>
+                    setShowCloseConfirmation(false)
+                }
+                disabled={closingJob}
+            >
+                Cancel
+            </Button>
+
+            <Button
+                variant="danger"
+                onClick={handleCloseJob}
+                disabled={closingJob}
+            >
+                {closingJob
+                    ? "Closing..."
+                    : "Confirm Close"}
+            </Button>
+        </Modal.Footer>
+    </Modal>
+)}
         </div>
     );
 }

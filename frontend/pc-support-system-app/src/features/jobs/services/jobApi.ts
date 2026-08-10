@@ -204,3 +204,31 @@ export async function updateJobStatus(
 
     return response.data;
 }
+
+export interface CloseJobRequest {
+    reason: JobCloseReason;
+    closureNotes: string;
+    internalClosureNotes?: string;
+}
+
+
+export type JobCloseReason =
+    | "completed"
+    | "not_repairable"
+    | "customer_cancelled"
+    | "customer_no_response"
+    | "customer_declined_repair"
+    | "duplicate_job";
+
+
+export async function closeJob(
+    jobId: string,
+    data: CloseJobRequest,
+): Promise<Job> {
+    const response = await api.post<Job>(
+        `/jobs/${jobId}/close`,
+        data,
+    );
+
+    return response.data;
+}
