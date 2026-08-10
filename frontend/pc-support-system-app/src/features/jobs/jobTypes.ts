@@ -53,6 +53,10 @@ export type Job = {
     closedAt?: string;
     createdBy: JobAuthor;
     assignedTo?: JobAssignedTo | null;
+    closeReason?: string;
+    closureNotes?: string;
+    internalClosureNotes?: string;
+
 };
 
 export type CreateJobRequest = {
@@ -125,6 +129,7 @@ export type JobCustomerProfile = {
     closureNotes?: string;
     closedAt?: string;
     internalClosureNotes?: string;
+    
 };
 
 export type CustomerJobsResponse = {

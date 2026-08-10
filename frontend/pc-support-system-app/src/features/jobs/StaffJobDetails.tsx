@@ -33,6 +33,15 @@ export type AssignableStaff = {
     state: string;
 };
 
+const closeReasonLabels: Record<string, string> = {
+    completed: "Completed",
+    not_repairable: "Not repairable",
+    customer_cancelled: "Customer cancelled",
+    customer_no_response: "Customer did not respond",
+    customer_declined_repair: "Customer declined repair",
+    duplicate_job: "Duplicate job",
+};
+
 export async function searchAssignableStaff(): Promise<
     AssignableStaff[]
 > {
@@ -387,6 +396,7 @@ const handleCloseJob = async () => {
 
         setStatusSuccess("Job closed successfully.");
 
+        
         // ---------------------------------------------------------------
     } catch (error: any) {
         const backendError =
@@ -1068,6 +1078,84 @@ const [staff, setStaff] =
                             </div>
                         </Card.Body>
                     </Card>
+ {job.status === "closed" && (
+   <Card className="mb-4">
+        <Card.Body>
+            <Card.Title className="mb-4">
+                Closure Information
+            </Card.Title>
+
+            <Row className="g-3">
+                <Col xs={12} md={6}>
+                    <div className="text-muted small">
+                        Closure Reason
+                    </div>
+
+                    <div className="fw-semibold">
+                        {job.closeReason
+                            ? closeReasonLabels[
+                                  job.closeReason
+                              ] ?? job.closeReason
+                            : "Not specified"}
+                    </div>
+                </Col>
+
+                <Col xs={12} md={6}>
+                    <div className="text-muted small">
+                        Closed By
+                    </div>
+
+                    <div className="fw-semibold">
+                        {job.assignedTo
+                            ? `${job.assignedTo.firstName} ${job.assignedTo.lastName}`
+                            : "Not specified"}
+                    </div>
+
+                    {job.assignedTo?.role && (
+                        <div className="text-muted">
+                            {formatRole(job.assignedTo.role)}
+                        </div>
+                    )}
+                </Col>
+
+                <Col xs={12} md={6}>
+                    <div className="text-muted small">
+                        Closed
+                    </div>
+
+                    <div>
+                        {job.closedAt
+                            ? formatDate(job.closedAt)
+                            : "Not specified"}
+                    </div>
+                </Col>
+
+                <Col xs={12}>
+                    <div className="text-muted small">
+                        Closure Notes
+                    </div>
+
+                    <div>
+                        {job.closureNotes ||
+                            "No closure notes."}
+                    </div>
+                </Col>
+
+                {job.internalClosureNotes && (
+                    <Col xs={12}>
+                        <div className="text-muted small">
+                            Internal Notes
+                        </div>
+
+                        <div>
+                            {job.internalClosureNotes}
+                        </div>
+                    </Col>
+                )}
+            </Row>
+        </Card.Body>
+    </Card>
+)}
        {canAssignJob && (                         
                     <Card className="mb-4">
     <Card.Body>
