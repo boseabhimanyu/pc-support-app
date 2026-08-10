@@ -158,7 +158,7 @@ func ToJobNoteResponse(
 }
 
 type CloseJobRequest struct {
-	Reason               models.JobCloseReason `json:"reason" binding:"required"`
+	Reason               models.JobCloseReason `json:"reason"`
 	ClosureNotes         string                `json:"closureNotes"`
 	InternalClosureNotes string                `json:"internalClosureNotes"`
 }

@@ -1125,42 +1125,117 @@ func (s *JobService) CloseJob(
 		return nil, errors.New("user account is inactive")
 	}
 
+	// Only technicians and head technicians can close jobs.
 	switch user.Role {
-
 	case models.RoleTechnician,
 		models.RoleHeadTechnician:
-
 		// allowed
 
 	default:
-		return nil, errors.New("user cannot close jobs")
+		return nil, errors.New("User cannot close jobs")
 	}
 
+	// A job must be assigned before it can be closed.
 	if job.AssignedToID == nil {
-		return nil, errors.New("job is not assigned")
+		return nil, errors.New("Job is not assigned")
 	}
 
+	// Only the assigned technician/head technician can close the job.
 	if *job.AssignedToID != user.ID {
-		return nil, errors.New("job is not assigned to you")
+		return nil, errors.New("Job is not assigned to you")
 	}
 
+	// A closed job cannot be closed again.
 	if job.Status == models.JobClosed {
-		return nil, errors.New("job is already closed")
+		return nil, errors.New("Job is already closed")
 	}
 
-	if job.Status != models.JobResumed {
-		return nil, errors.New("only resumed jobs can be closed")
-	}
-
+	// Validate the closure reason first.
 	if !req.Reason.IsValid() {
-		return nil, errors.New("invalid closure reason")
+		return nil, errors.New("Invalid closure reason")
+	}
+
+	// Validate the closure reason against the current job status.
+	switch req.Reason {
+
+	case models.JobCompleted:
+		// A job can only be completed after the customer
+		// has responded and the job has been resumed.
+		if job.Status != models.JobResumed {
+			return nil, errors.New(
+				"Completed jobs can only be closed from Resumed Status",
+			)
+		}
+
+	case models.JobNotRepairable:
+		// A job can be marked not repairable while waiting
+		// for the customer or after being resumed.
+		if job.Status != models.JobWaitingCustomer &&
+			job.Status != models.JobResumed {
+			return nil, errors.New(
+				"Not repairable jobs can only be closed from Waiting for customer or Resumed status",
+			)
+		}
+
+	case models.JobCustomerNoResponse:
+		// No response is relevant when the job is waiting
+		// for the customer or has been resumed.
+		if job.Status != models.JobWaitingCustomer &&
+			job.Status != models.JobResumed {
+			return nil, errors.New(
+				"Customer no response jobs can only be closed from Waiting for customer or Resumed status",
+			)
+		}
+
+	case models.JobCustomerDeclined:
+		// Customer can decline the repair while waiting
+		// for the customer or after the job has been resumed.
+		if job.Status != models.JobWaitingCustomer &&
+			job.Status != models.JobResumed {
+			return nil, errors.New(
+				"Customer declined repair jobs can only be closed from Waiting for customer or Resumed status",
+			)
+		}
+
+	case models.JobCustomerCancelled:
+		// Customer cancellation can happen after assignment,
+		// once the technician has started working on the job.
+		if job.Status != models.JobInProgress &&
+			job.Status != models.JobWaitingCustomer &&
+			job.Status != models.JobResumed {
+			return nil, errors.New(
+				"Customer cancelled jobs can only be closed from In progress, Waiting for customer, or Resumed status",
+			)
+		}
+
+	case models.JobDuplicateJob:
+		// A duplicate can be discovered immediately after
+		// assignment or at any later working stage.
+		if job.Status != models.JobAssigned &&
+			job.Status != models.JobInProgress &&
+			job.Status != models.JobWaitingCustomer &&
+			job.Status != models.JobResumed {
+			return nil, errors.New(
+				"Duplicate jobs can only be closed from assigned, In progress, Waiting for customer, or Resumed status",
+			)
+		}
 	}
 
 	req.ClosureNotes = strings.TrimSpace(req.ClosureNotes)
-	req.InternalClosureNotes = strings.TrimSpace(req.InternalClosureNotes)
+	req.InternalClosureNotes = strings.TrimSpace(
+		req.InternalClosureNotes,
+	)
+	if strings.TrimSpace(string(req.Reason)) == "" {
+		return nil, errors.New("Closure reason is required")
+	}
+
+	if req.ClosureNotes == "" {
+		return nil, errors.New("Closure notes are required")
+	}
 
 	now := time.Now()
 	oldStatus := job.Status
+
 	job.Status = models.JobClosed
 	job.CloseReason = req.Reason
 	job.ClosureNotes = req.ClosureNotes
@@ -1184,11 +1259,12 @@ func (s *JobService) CloseJob(
 		models.AuditJobClosed,
 		user.ID,
 		bson.M{
-			"from":   oldStatus,  // resumed
-			"to":     job.Status, // closed
+			"from":   oldStatus,
+			"to":     job.Status,
 			"reason": req.Reason,
 		},
 	)
+
 	return s.buildJobDetailsResponse(
 		ctx,
 		job,
