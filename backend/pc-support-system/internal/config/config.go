@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -16,26 +17,29 @@ type Config struct {
 	JWTSecret      string
 	JWTExpiryHours int
 	GinMode        string
+	AllowedOrigins []string
 }
 
 func Load() (Config, error) {
+	// .env is optional.
+	//
+	// Local development:
+	//   .env can be loaded by godotenv.
+	//
+	// Docker/cloud:
+	//   Environment variables can be supplied externally.
+	//
+	// Therefore, failure to find .env should NOT be an error.
 	paths := []string{
 		".env",
 		"../.env",
 		"../../.env",
 	}
 
-	loaded := false
-
 	for _, p := range paths {
 		if err := godotenv.Load(p); err == nil {
-			loaded = true
 			break
 		}
-	}
-
-	if !loaded {
-		return Config{}, fmt.Errorf(".env not found")
 	}
 
 	mongoURI, err := extractEnv("MONGO_URI")
@@ -65,26 +69,54 @@ func Load() (Config, error) {
 
 	jwtExpiryHours, err := strconv.Atoi(jwtExpiryHoursStr)
 	if err != nil {
-		return Config{}, fmt.Errorf("invalid JWT_EXPIRY_HOURS")
+		return Config{}, fmt.Errorf("invalid JWT_EXPIRY_HOURS: %w", err)
 	}
 
-	gin_mode, err := extractEnv("GIN_MODE")
+	ginMode, err := extractEnv("GIN_MODE")
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{
+
+	allowedOriginsStr, err := extractEnv("ALLOWED_ORIGINS")
+	if err != nil {
+		return Config{}, err
+	}
+
+	// Convert:
+	//
+	// http://localhost:3000,http://localhost:5173
+	//
+	// into:
+	//
+	// []string{
+	//     "http://localhost:3000",
+	//     "http://localhost:5173",
+	// }
+	allowedOrigins := strings.Split(allowedOriginsStr, ",")
+
+	for i := range allowedOrigins {
+		allowedOrigins[i] = strings.TrimSpace(allowedOrigins[i])
+	}
+
+	config := Config{
 		MongoUri:       mongoURI,
 		MongoDB:        mongoDB,
 		ServerPort:     port,
 		JWTSecret:      jwtSecret,
 		JWTExpiryHours: jwtExpiryHours,
-		GinMode:        gin_mode,
-	}, nil
+		GinMode:        ginMode,
+		AllowedOrigins: allowedOrigins,
+	}
+
+	if err := config.Validate(); err != nil {
+		return Config{}, err
+	}
+
+	return config, nil
 }
 
-// Add a Configuration Validation Function
+// Validate validates the loaded configuration.
 func (c Config) Validate() error {
-
 	if c.MongoUri == "" {
 		return errors.New("mongo uri missing")
 	}
@@ -101,16 +133,30 @@ func (c Config) Validate() error {
 		return errors.New("jwt secret missing")
 	}
 
-	if strconv.Itoa(c.JWTExpiryHours) == "" {
-		return errors.New("jwt expiry hours missing")
+	if c.JWTExpiryHours <= 0 {
+		return errors.New("JWT expiry hours must be greater than zero")
 	}
+
+	if c.GinMode == "" {
+		return errors.New("GIN_MODE missing")
+	}
+
+	if len(c.AllowedOrigins) == 0 {
+		return errors.New("ALLOWED_ORIGINS missing")
+	}
+
 	return nil
 }
 
 func extractEnv(key string) (string, error) {
-	val := os.Getenv(key)
+	val := strings.TrimSpace(os.Getenv(key))
+
 	if val == "" {
-		return "", fmt.Errorf("missing required environment variable: %s", key)
+		return "", fmt.Errorf(
+			"missing required environment variable: %s",
+			key,
+		)
 	}
+
 	return val, nil
 }

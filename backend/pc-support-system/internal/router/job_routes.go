@@ -118,7 +118,10 @@ func RegisterJobRoutes(rg *gin.RouterGroup, jobHandler *handlers.JobHandler) {
 			string(models.RoleSuperAdmin),
 			string(models.RoleCustomer),
 		), jobHandler.GetJobByNumber)
-		jobs.POST("/:jobId/close", jobHandler.CloseJob)
+		jobs.POST("/:jobId/close", auth.RequireRoles(
+			string(models.RoleTechnician),
+			string(models.RoleHeadTechnician),
+		), jobHandler.CloseJob)
 		jobs.GET("/search", auth.RequireRoles(
 			string(models.RoleReceptionist),
 			string(models.RoleTechnician),

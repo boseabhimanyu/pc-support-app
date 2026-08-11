@@ -22,8 +22,7 @@ func NewRouter(database *mongo.Database, cfg config.Config) *gin.Engine {
 	// -------------------------------------------------------------
 	r.Use(cors.New(cors.Config{
 		// Allow your Vite development server origin
-		AllowOrigins: []string{"http://localhost:5173", "http://127.0.0.1:5173"},
-
+		AllowOrigins: cfg.AllowedOrigins,
 		// Explicitly allow HTTP methods used by your frontend
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 

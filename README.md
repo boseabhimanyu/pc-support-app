@@ -16,7 +16,7 @@ Features
 - Authentication
 - Role Based Access
 
-##.env file
+## .env file
 
 ```
 
