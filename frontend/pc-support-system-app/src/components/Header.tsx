@@ -1,69 +1,25 @@
 import { Navbar, Container, Nav, Button } from "react-bootstrap";
-
 import { useAuth } from "../features/auth/hooks/useAuth";
 
 export default function Header() {
-
-    const {
-        user,
-        logout,
-    } = useAuth();
-
-    async function handleLogout() {
-
-        await logout();
-
-    }
+    const { user, logout } = useAuth();
+    async function handleLogout() { await logout(); }
 
     return (
-
-        <Navbar
-            bg="light"
-            className="border-bottom shadow-sm"
-        >
-
+        <Navbar className="app-header">
             <Container fluid>
-
-                <Navbar.Brand>
-
-                    PC Support
-
+                <Navbar.Brand className="brand-mark">
+                    <span className="brand-icon">P</span>
+                    <span>PC Support<small>Service desk</small></span>
                 </Navbar.Brand>
-
                 <Nav className="ms-auto align-items-center">
-
-                    <div className="me-3 text-end">
-
-                        <div>
-
-                            Hello, {user?.firstName} 👋
-
-                        </div>
-
-                        <small className="text-muted">
-
-                            {user?.role}
-
-                        </small>
-
+                    <div className="me-3 text-end user-summary">
+                        <div>Welcome back, {user?.firstName}</div>
+                        <small className="text-muted">{user?.role}</small>
                     </div>
-
-                    <Button
-                        size="sm"
-                        variant="outline-danger"
-                        onClick={handleLogout}
-                    >
-
-                        Logout
-
-                    </Button>
-
+                    <Button size="sm" variant="outline-danger" onClick={handleLogout}>Logout</Button>
                 </Nav>
-
             </Container>
-
         </Navbar>
-
     );
-
 }
