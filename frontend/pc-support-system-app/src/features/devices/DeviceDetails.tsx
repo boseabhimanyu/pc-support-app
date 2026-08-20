@@ -92,21 +92,21 @@ export default function DeviceDetails() {
     }, [deviceId]);
 
 
-    function formatValue(
-        value: string,
-    ) {
+    // function formatValue(
+    //     value: string,
+    // ) {
 
-        if (!value) {
-            return "--";
-        }
+    //     if (!value) {
+    //         return "--";
+    //     }
 
-        return value
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (letter) =>
-                letter.toUpperCase(),
-            );
+    //     return value
+    //         .replace(/_/g, " ")
+    //         .replace(/\b\w/g, (letter) =>
+    //             letter.toUpperCase(),
+    //         );
 
-    }
+    // }
 
 
     if (loading) {
