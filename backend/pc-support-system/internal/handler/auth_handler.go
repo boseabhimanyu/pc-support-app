@@ -117,17 +117,17 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		h.cfg.JWTExpiryHours*60*60,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
 	c.SetCookie(
 		"refresh_token",
 		refreshToken,
-		30*24*60*60,
+		h.cfg.RefreshTokenExpiryDays*24*60*60,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
@@ -142,7 +142,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		-1,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
@@ -152,7 +152,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		-1,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
@@ -310,7 +310,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		h.cfg.JWTExpiryHours*60*60,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
@@ -319,10 +319,10 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	c.SetCookie(
 		"refresh_token",
 		newRefreshToken,
-		30*24*60*60,
+		h.cfg.RefreshTokenExpiryDays*24*60*60,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 

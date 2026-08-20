@@ -5,17 +5,20 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	MongoUri       string
-	MongoDB        string
-	ServerPort     string
-	JWTSecret      string
-	JWTExpiryHours int
-	GinMode        string
+	MongoUri               string
+	MongoDB                string
+	ServerPort             string
+	JWTSecret              string
+	JWTExpiryHours         int
+	RefreshTokenExpiryDays int
+	CookieSecure           bool
+	GinMode                string
 }
 
 func Load() (Config, error) {
@@ -30,6 +33,7 @@ func Load() (Config, error) {
 			break
 		}
 	}
+
 	mongoURI, err := extractEnv("MONGO_URI")
 	if err != nil {
 		return Config{}, err
@@ -57,26 +61,67 @@ func Load() (Config, error) {
 
 	jwtExpiryHours, err := strconv.Atoi(jwtExpiryHoursStr)
 	if err != nil {
-		return Config{}, fmt.Errorf("invalid JWT_EXPIRY_HOURS")
+		return Config{}, fmt.Errorf(
+			"invalid JWT_EXPIRY_HOURS: %w",
+			err,
+		)
+	}
+
+	refreshTokenExpiryDaysStr, err := extractEnv(
+		"REFRESH_TOKEN_EXPIRY_DAYS",
+	)
+	if err != nil {
+		return Config{}, err
+	}
+
+	refreshTokenExpiryDays, err := strconv.Atoi(
+		refreshTokenExpiryDaysStr,
+	)
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"invalid REFRESH_TOKEN_EXPIRY_DAYS: %w",
+			err,
+		)
+	}
+
+	cookieSecureStr, err := extractEnv("COOKIE_SECURE")
+	if err != nil {
+		return Config{}, err
+	}
+
+	cookieSecure, err := strconv.ParseBool(cookieSecureStr)
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"invalid COOKIE_SECURE: %w",
+			err,
+		)
 	}
 
 	gin_mode, err := extractEnv("GIN_MODE")
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{
-		MongoUri:       mongoURI,
-		MongoDB:        mongoDB,
-		ServerPort:     port,
-		JWTSecret:      jwtSecret,
-		JWTExpiryHours: jwtExpiryHours,
-		GinMode:        gin_mode,
-	}, nil
+
+	config := Config{
+		MongoUri:               mongoURI,
+		MongoDB:                mongoDB,
+		ServerPort:             port,
+		JWTSecret:              jwtSecret,
+		JWTExpiryHours:         jwtExpiryHours,
+		RefreshTokenExpiryDays: refreshTokenExpiryDays,
+		CookieSecure:           cookieSecure,
+		GinMode:                gin_mode,
+	}
+
+	if err := config.Validate(); err != nil {
+		return Config{}, err
+	}
+
+	return config, nil
 }
 
-// Add a Configuration Validation Function
+// Validate validates the loaded configuration.
 func (c Config) Validate() error {
-
 	if c.MongoUri == "" {
 		return errors.New("mongo uri missing")
 	}
@@ -93,16 +138,30 @@ func (c Config) Validate() error {
 		return errors.New("jwt secret missing")
 	}
 
-	if strconv.Itoa(c.JWTExpiryHours) == "" {
-		return errors.New("jwt expiry hours missing")
+	if c.JWTExpiryHours <= 0 {
+		return errors.New(
+			"jwt expiry hours must be greater than zero",
+		)
 	}
+
+	if c.RefreshTokenExpiryDays <= 0 {
+		return errors.New(
+			"refresh token expiry days must be greater than zero",
+		)
+	}
+
 	return nil
 }
 
 func extractEnv(key string) (string, error) {
-	val := os.Getenv(key)
+	val := strings.TrimSpace(os.Getenv(key))
+
 	if val == "" {
-		return "", fmt.Errorf("missing required environment variable: %s", key)
+		return "", fmt.Errorf(
+			"missing required environment variable: %s",
+			key,
+		)
 	}
+
 	return val, nil
 }
