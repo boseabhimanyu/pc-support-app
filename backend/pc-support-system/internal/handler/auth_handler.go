@@ -110,7 +110,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// Keep the RAW refresh token in the browser cookie.
+	// Apply SameSite policy to cookies created on this context.
+	c.SetSameSite(h.cfg.CookieSameSite)
+
 	c.SetCookie(
 		"access_token",
 		accessToken,
@@ -118,9 +120,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"/",
 		"",
 		h.cfg.CookieSecure,
-		true,
+		true, // HttpOnly
 	)
 
+	// Keep the RAW refresh token in the browser cookie.
+	// Only its hash is stored in the database.
 	c.SetCookie(
 		"refresh_token",
 		refreshToken,
@@ -128,13 +132,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"/",
 		"",
 		h.cfg.CookieSecure,
-		true,
+		true, // HttpOnly
 	)
 
 	c.JSON(http.StatusOK, dto.ToUserResponse(user))
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
+
+	c.SetSameSite(h.cfg.CookieSameSite)
 
 	c.SetCookie(
 		"access_token",
@@ -302,6 +308,8 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		})
 		return
 	}
+
+	c.SetSameSite(h.cfg.CookieSameSite)
 
 	// Send the raw access token to the browser.
 	c.SetCookie(

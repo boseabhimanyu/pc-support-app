@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ type Config struct {
 	JWTExpiryHours         int
 	RefreshTokenExpiryDays int
 	CookieSecure           bool
+	CookieSameSite         http.SameSite
 	GinMode                string
 	AllowedOrigins         []string
 }
@@ -98,6 +100,30 @@ func Load() (Config, error) {
 		)
 	}
 
+	cookieSameSiteStr, err := extractEnv("COOKIE_SAME_SITE")
+	if err != nil {
+		return Config{}, err
+	}
+
+	var cookieSameSite http.SameSite
+
+	switch strings.ToLower(cookieSameSiteStr) {
+	case "strict":
+		cookieSameSite = http.SameSiteStrictMode
+
+	case "lax":
+		cookieSameSite = http.SameSiteLaxMode
+
+	case "none":
+		cookieSameSite = http.SameSiteNoneMode
+
+	default:
+		return Config{}, fmt.Errorf(
+			"invalid COOKIE_SAME_SITE: %s",
+			cookieSameSiteStr,
+		)
+	}
+
 	gin_mode, err := extractEnv("GIN_MODE")
 	if err != nil {
 		return Config{}, err
@@ -132,6 +158,7 @@ func Load() (Config, error) {
 		JWTExpiryHours:         jwtExpiryHours,
 		RefreshTokenExpiryDays: refreshTokenExpiryDays,
 		CookieSecure:           cookieSecure,
+		CookieSameSite:         cookieSameSite,
 		GinMode:                gin_mode,
 		AllowedOrigins:         allowedOrigins,
 	}

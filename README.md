@@ -28,9 +28,10 @@ JWT_EXPIRY_HOURS=24
 GIN_MODE=debug //debug or release
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:<port>
 REFRESH_TOKEN_EXPIRY_DAYS=<set number of days>
-COOKIE_SECURE=false 
-
+COOKIE_SECURE=false
 #For running backend and development it will be false
+COOKIE_SAME_SITE=lax
+# frontend and backend are on different providers else 'none'
 
 ```
 
