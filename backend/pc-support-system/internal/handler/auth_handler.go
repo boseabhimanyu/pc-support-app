@@ -8,6 +8,7 @@ import (
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/config"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/dto"
 	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/services"
+	"github.com/boseabhimanyu/pc-support-app/backend/pc-support-system/internal/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -73,6 +74,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		h.cfg.JWTSecret,
 		h.cfg.JWTExpiryHours,
 	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to generate access token",
+		})
+		return
+	}
 
 	refreshToken, expiresAt, err := auth.GenerateRefreshToken(
 		user,
@@ -86,10 +93,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// Hash the refresh token before storing it in the database.
+	refreshTokenHash := utils.HashRefreshToken(refreshToken)
+
 	err = h.authService.UpdateRefreshToken(
 		c.Request.Context(),
 		user.ID,
-		refreshToken,
+		refreshTokenHash,
 		expiresAt,
 	)
 
@@ -100,24 +110,25 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// Keep the RAW refresh token in the browser cookie.
 	c.SetCookie(
 		"access_token",
 		accessToken,
 		h.cfg.JWTExpiryHours*60*60,
 		"/",
 		"",
-		false, // Secure = true in production (HTTPS)
-		true,  // HttpOnly
+		h.cfg.CookieSecure,
+		true,
 	)
 
 	c.SetCookie(
 		"refresh_token",
 		refreshToken,
-		30*24*60*60, // 30 days
+		h.cfg.RefreshTokenExpiryDays*24*60*60,
 		"/",
 		"",
-		false, // Secure = true in production
-		true,  // HttpOnly
+		h.cfg.CookieSecure,
+		true,
 	)
 
 	c.JSON(http.StatusOK, dto.ToUserResponse(user))
@@ -131,7 +142,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		-1,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
@@ -141,7 +152,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		-1,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
@@ -188,7 +199,6 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 }
 
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
-
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -197,19 +207,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	// Validate JWT
-	_, err = auth.ValidateRefreshToken(
-		refreshToken,
-		h.cfg.JWTSecret,
-	)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "invalid refresh token",
-		})
-		return
-	}
-
-	// Find user by stored refresh token
+	// Validate the JWT and extract the user ID.
 	userID, err := auth.ValidateRefreshToken(
 		refreshToken,
 		h.cfg.JWTSecret,
@@ -221,11 +219,11 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	// Find the user associated with the refresh token.
 	user, err := h.authService.FindByID(
 		c.Request.Context(),
 		userID,
 	)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -240,7 +238,21 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	// Check expiry stored in DB
+	// Compare the raw token from the browser
+	// against the hashed token stored in the database.
+	if user.CurrentRefreshToken == "" ||
+		!utils.VerifyRefreshToken(
+			refreshToken,
+			user.CurrentRefreshToken,
+		) {
+
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid refresh token",
+		})
+		return
+	}
+
+	// Check expiry stored in the database.
 	if user.RefreshTokenExpiresAt == nil ||
 		time.Now().After(*user.RefreshTokenExpiresAt) {
 
@@ -250,7 +262,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	// Generate new access token
+	// Generate a new access token.
 	accessToken, err := auth.GenerateToken(
 		user,
 		h.cfg.JWTSecret,
@@ -263,7 +275,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	// Rotate refresh token
+	// Rotate refresh token.
 	newRefreshToken, expiresAt, err := auth.GenerateRefreshToken(
 		user,
 		h.cfg.JWTSecret,
@@ -275,10 +287,13 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	// Store only the hash in the database.
+	newRefreshTokenHash := utils.HashRefreshToken(newRefreshToken)
+
 	err = h.authService.UpdateRefreshToken(
 		c.Request.Context(),
 		user.ID,
-		newRefreshToken,
+		newRefreshTokenHash,
 		expiresAt,
 	)
 	if err != nil {
@@ -288,23 +303,26 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	// Send the raw access token to the browser.
 	c.SetCookie(
 		"access_token",
 		accessToken,
 		h.cfg.JWTExpiryHours*60*60,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 
+	// Send the raw refresh token to the browser.
+	// The database contains only its hash.
 	c.SetCookie(
 		"refresh_token",
 		newRefreshToken,
-		30*24*60*60,
+		h.cfg.RefreshTokenExpiryDays*24*60*60,
 		"/",
 		"",
-		false,
+		h.cfg.CookieSecure,
 		true,
 	)
 

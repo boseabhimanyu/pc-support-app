@@ -11,25 +11,18 @@ import (
 )
 
 type Config struct {
-	MongoUri       string
-	MongoDB        string
-	ServerPort     string
-	JWTSecret      string
-	JWTExpiryHours int
-	GinMode        string
-	AllowedOrigins []string
+	MongoUri               string
+	MongoDB                string
+	ServerPort             string
+	JWTSecret              string
+	JWTExpiryHours         int
+	RefreshTokenExpiryDays int
+	CookieSecure           bool
+	GinMode                string
+	AllowedOrigins         []string
 }
 
 func Load() (Config, error) {
-	// .env is optional.
-	//
-	// Local development:
-	//   .env can be loaded by godotenv.
-	//
-	// Docker/cloud:
-	//   Environment variables can be supplied externally.
-	//
-	// Therefore, failure to find .env should NOT be an error.
 	paths := []string{
 		".env",
 		"../.env",
@@ -69,10 +62,43 @@ func Load() (Config, error) {
 
 	jwtExpiryHours, err := strconv.Atoi(jwtExpiryHoursStr)
 	if err != nil {
-		return Config{}, fmt.Errorf("invalid JWT_EXPIRY_HOURS: %w", err)
+		return Config{}, fmt.Errorf(
+			"invalid JWT_EXPIRY_HOURS: %w",
+			err,
+		)
 	}
 
-	ginMode, err := extractEnv("GIN_MODE")
+	refreshTokenExpiryDaysStr, err := extractEnv(
+		"REFRESH_TOKEN_EXPIRY_DAYS",
+	)
+	if err != nil {
+		return Config{}, err
+	}
+
+	refreshTokenExpiryDays, err := strconv.Atoi(
+		refreshTokenExpiryDaysStr,
+	)
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"invalid REFRESH_TOKEN_EXPIRY_DAYS: %w",
+			err,
+		)
+	}
+
+	cookieSecureStr, err := extractEnv("COOKIE_SECURE")
+	if err != nil {
+		return Config{}, err
+	}
+
+	cookieSecure, err := strconv.ParseBool(cookieSecureStr)
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"invalid COOKIE_SECURE: %w",
+			err,
+		)
+	}
+
+	gin_mode, err := extractEnv("GIN_MODE")
 	if err != nil {
 		return Config{}, err
 	}
@@ -99,13 +125,15 @@ func Load() (Config, error) {
 	}
 
 	config := Config{
-		MongoUri:       mongoURI,
-		MongoDB:        mongoDB,
-		ServerPort:     port,
-		JWTSecret:      jwtSecret,
-		JWTExpiryHours: jwtExpiryHours,
-		GinMode:        ginMode,
-		AllowedOrigins: allowedOrigins,
+		MongoUri:               mongoURI,
+		MongoDB:                mongoDB,
+		ServerPort:             port,
+		JWTSecret:              jwtSecret,
+		JWTExpiryHours:         jwtExpiryHours,
+		RefreshTokenExpiryDays: refreshTokenExpiryDays,
+		CookieSecure:           cookieSecure,
+		GinMode:                gin_mode,
+		AllowedOrigins:         allowedOrigins,
 	}
 
 	if err := config.Validate(); err != nil {
@@ -134,15 +162,15 @@ func (c Config) Validate() error {
 	}
 
 	if c.JWTExpiryHours <= 0 {
-		return errors.New("JWT expiry hours must be greater than zero")
+		return errors.New(
+			"jwt expiry hours must be greater than zero",
+		)
 	}
 
-	if c.GinMode == "" {
-		return errors.New("GIN_MODE missing")
-	}
-
-	if len(c.AllowedOrigins) == 0 {
-		return errors.New("ALLOWED_ORIGINS missing")
+	if c.RefreshTokenExpiryDays <= 0 {
+		return errors.New(
+			"refresh token expiry days must be greater than zero",
+		)
 	}
 
 	return nil
